@@ -86,10 +86,10 @@ The system contains a master dataset of **25 multi-strata properties valued at �
 ### 3.2 Structure Valuation Methodology
 1. **Base Cadastral Capitalization (`valuation_cr`):** Derived from official Ready Reckoner / Circle Rates and commercial real estate market valuations across Central Business Districts (e.g., BKC Diamond Tower at ₹2,400 Cr, GIFT Diamond Tower at ₹2,800 Cr, Seawoods TOD at ₹850 Cr).
 2. **Volumetric Floor-Level Apportionment:** In the 3D Digital Twin, floor-level valuation is dynamically computed:
-   $$\text{Floor Valuation} = \frac{\text{Total Valuation (₹ Cr)}}{\text{Total Floor Slices}}$$
+   $$\text{Floor Valuation} = \frac{\text{Total Valuation (INR Cr)}}{\text{Total Floor Slices}}$$
    Subterranean parking and infrastructure caverns are assigned dedicated utility valuations (₹35–180 Cr) reflecting specialized geotechnical construction costs.
 3. **Statutory State Stamp Duty (6%):** Sub-Registrar Mode calculates statutory state stamp duty for individual airspace conveyances:
-   $$\text{Stamp Duty (₹ Cr)} = \text{valuation\_cr} \times 0.06$$
+   $$\text{Stamp Duty} = \text{Cadastral Valuation} \times 0.06$$
 4. **Cryptographic Hash Sealing:** Valuations are cryptographically bound into the SHA-256 title hash, preventing fraudulent tax evasion or undervaluation during mortgage underwriting.
 
 ---
@@ -106,7 +106,9 @@ $$\underbrace{\text{SS}}_{\text{State (2d)}} - \underbrace{\text{DD}}_{\text{Dis
 * **Subsurface (Basements):** Appends `-UXX` (e.g., `-U02` for Basement Level 2, depth $-6.0\text{m}$ to $-9.0\text{m}$).
 
 ### 4.3 Enhanced ISO 19152 (LADM Edition II) Specification
-$$\text{[LGD]} - \text{[BASE\_2D]} - \text{[STRATUM]} - \text{[LEVEL]} - \text{[UNIT]} - \text{[CHECKSUM]}$$
+```
+[LGD]-[BASE_2D]-[STRATUM]-[LEVEL]-[UNIT]-[CHECKSUM]
+```
 *Example:* **`2721-27211010500101-BLD-F04-U01-K`**
 
 #### Strata Types
