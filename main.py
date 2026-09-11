@@ -42,7 +42,7 @@ from frontend.digital_twin_component import render_3d_digital_twin_component
 # Page configuration matching Figma 1440px dark space layout
 st.set_page_config(
     layout="wide", 
-    page_title="BHU-AADHAAR 3D | ISO 19152 Spatial Cadastre", 
+    page_title="3D ULPIN GENERATOR | ISO 19152 Spatial Cadastre", 
     page_icon="🏙️",
     initial_sidebar_state="collapsed"
 )
@@ -496,7 +496,7 @@ elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
                 st.caption(f"Modulo-36 Check Digit: **{chk_digit}** &bull; ISO 19152 LADM Status: **Valid & Certified**")
 
                 qr_uri = generate_qr_code_svg(full_3d_ulpin, {"property": prop_data['name'], "unit": u_unit, "level": u_level})
-                st.image(qr_uri, width=120, caption="Cryptographic Bhu-Aadhaar 3D QR")
+                st.image(qr_uri, width=120, caption="Cryptographic 3D ULPIN Generator QR")
 
 # =============================================================
 # VIEW 3: FIGMA CITIZEN PORTFOLIO & OFFICIAL TITLE CERTIFICATE
@@ -548,7 +548,7 @@ elif selected_view == "🏠 Citizen / Homebuyer Portal":
         </div>
     """)
 
-    # Live Digital Bhu-Aadhaar Certificate Preview with QR Code
+    # Live Digital 3D ULPIN Generator Certificate Preview with QR Code
     render_bhu_aadhaar_card_preview(prop_data, target_floor, active_ulpin, theme=current_theme)
 
     # 1-Click Official Title PDF Download & Toggle for Full Parchment View
@@ -557,9 +557,9 @@ elif selected_view == "🏠 Citizen / Homebuyer Portal":
     with c_pdf1:
         pdf_bytes = generate_bhu_aadhaar_pdf(prop_data, target_floor, active_ulpin)
         st.download_button(
-            label="📥 Download Official 3D Bhu-Aadhaar Certificate (PDF)",
+            label="📥 Download Official 3D ULPIN Generator Certificate (PDF)",
             data=pdf_bytes,
-            file_name=f"3D_Bhu_Aadhaar_Certificate_{active_ulpin}.pdf",
+            file_name=f"3D_ULPIN_Generator_Certificate_{active_ulpin}.pdf",
             mime="application/pdf",
             type="primary",
             use_container_width=True

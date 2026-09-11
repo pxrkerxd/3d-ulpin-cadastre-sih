@@ -33,7 +33,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages after cover)
         if self._pageNumber > 1:
-            self.drawString(50, letter[1] - 34, "BHU-AADHAAR 3D | Comprehensive Technical & Architectural Specification")
+            self.drawString(50, letter[1] - 34, "3D ULPIN GENERATOR | Comprehensive Technical & Architectural Specification")
             self.drawRightString(letter[0] - 50, letter[1] - 34, "ISO 19152 Cadastre | SIH 2026")
             self.setStrokeColor(colors.HexColor("#cbd5e1"))
             self.setLineWidth(0.75)
@@ -200,7 +200,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     story.append(badge_table)
     story.append(Spacer(1, 8))
 
-    story.append(Paragraph("BHU-AADHAAR 3D: MASTER TECHNICAL SPECIFICATION", doc_title_style))
+    story.append(Paragraph("3D ULPIN GENERATOR: MASTER TECHNICAL SPECIFICATION", doc_title_style))
     story.append(Paragraph("Next-Generation 3D Spatial Cadastre, Subsurface Collision Engine, AI Slicing & Vertical Land Registry", subtitle_style))
     story.append(Paragraph("<b>System Lead:</b> Parijat Sharma &bull; <b>Ecosystem:</b> Smart India Hackathon 2026 &bull; <b>Standard:</b> ISO 19152 (LADM Edition II)", meta_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0284c7"), spaceAfter=10, spaceBefore=6))
@@ -222,7 +222,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     story.append(Paragraph("&bull; <b>Subsurface Utility Breaches:</b> Deep private foundation piling and basement excavation frequently collide with underground metro tunnels, water mains, and high-voltage power conduits due to the lack of a 3D subsurface cadastre.", bullet_style))
     story.append(Paragraph("&bull; <b>Title Ambiguity & Double Financing:</b> Without immutable, vertical parcel IDs, fraudulent developers can double-mortgage air-rights or transfer overlapping units.", bullet_style))
     story.append(Paragraph(
-        "<b>Bhu-Aadhaar 3D</b> solves this by delivering an ISO 19152 compliant 3D cadastral platform with procedural WebGL digital twins, automated AI LiDAR floor slicing, subterranean clash audits, Modulo-36 check-digit vertical ULPINs, and tamper-proof SHA-256 PDF title deeds.",
+        "<b>3D ULPIN Generator</b> solves this by delivering an ISO 19152 compliant 3D cadastral platform with procedural WebGL digital twins, automated AI LiDAR floor slicing, subterranean clash audits, Modulo-36 check-digit vertical ULPINs, and tamper-proof SHA-256 PDF title deeds.",
         body_style
     ))
     story.append(Spacer(1, 6))
@@ -241,7 +241,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     
     story.append(Paragraph("2.1 Valuation Derivation Methodology", h2_style))
     story.append(Paragraph(
-        "Property and structure valuations in Bhu-Aadhaar 3D are modeled on realistic Indian municipal circle rates and market capitalizations:",
+        "Property and structure valuations in 3D ULPIN Generator are modeled on realistic Indian municipal circle rates and market capitalizations:",
         body_style
     ))
     story.append(Paragraph("&bull; <b>Cadastral Base Capitalization (<code>valuation_cr</code>):</b> Stored in ₹ Crores, calibrated against Ready Reckoner Rates (Maharashtra), Circle Rates (Delhi/NCR), Guidance Values (Karnataka), and jantri rates (Gujarat). Tier-1 financial bourses (e.g. BKC Diamond Tower at ₹2,400 Cr, GIFT Diamond Tower at ₹2,800 Cr) reflect real capital valuations.", bullet_style))
@@ -265,7 +265,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     story.append(Spacer(1, 5))
 
     story.append(Paragraph("&bull; <b>Statutory State Stamp Duty Calculation:</b> In Sub-Registrar Mode, the platform automatically computes legal state stamp duty for individual airspace conveyances at 6% of the cadastral valuation: <code>Stamp Duty = valuation_cr * 0.06</code>.", bullet_style))
-    story.append(Paragraph("&bull; <b>Cryptographic Title Binding:</b> The cadastral valuation is cryptographically fused into the SHA-256 title hash printed on the Bhu-Aadhaar certificate, preventing fraudulent undervaluation during bank mortgage audits.", bullet_style))
+    story.append(Paragraph("&bull; <b>Cryptographic Title Binding:</b> The cadastral valuation is cryptographically fused into the SHA-256 title hash printed on the 3D ULPIN Generator certificate, preventing fraudulent undervaluation during bank mortgage audits.", bullet_style))
 
     story.append(Paragraph("2.2 Benchmark Pan-India Cadastral Dataset (Sample)", h2_style))
     
@@ -310,9 +310,9 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     # =========================================================================
     # 3. 3D ULPIN NUMBERING LOGIC & STANDARDS
     # =========================================================================
-    story.append(Paragraph("3. Building ULPIN (Bhu-Aadhaar 3D) Numbering Logic", h1_style))
+    story.append(Paragraph("3. 3D ULPIN Generator Numbering Logic", h1_style))
     story.append(Paragraph(
-        "India's Ministry of Rural Development prescribes the 14-digit Unique Land Parcel Identification Number (ULPIN). Bhu-Aadhaar 3D extends this into a full volumetric cadastre under ISO 19152 (LADM Edition II):",
+        "India's Ministry of Rural Development prescribes the 14-digit Unique Land Parcel Identification Number (ULPIN). 3D ULPIN Generator extends this into a full volumetric cadastre under ISO 19152 (LADM Edition II):",
         body_style
     ))
     
@@ -381,7 +381,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     # =========================================================================
     story.append(Paragraph("4. The AI, 3D & Computational Models", h1_style))
     story.append(Paragraph(
-        "Bhu-Aadhaar 3D incorporates four distinct mathematical and artificial intelligence engines:",
+        "3D ULPIN Generator incorporates four distinct mathematical and artificial intelligence engines:",
         body_style
     ))
 
@@ -445,7 +445,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
         [Paragraph("<b>Analytics Charts</b>", table_td_style), Paragraph("Chart.js + Streamlit Charts", table_td_style), Paragraph("Latest", table_td_style), Paragraph("LiDAR vertical Z-density curves, metro-wise valuation aggregations", table_td_style)],
         [Paragraph("<b>Database Layer</b>", table_td_style), Paragraph("SQLite3 (Embedded SQL)", table_td_style), Paragraph("3.x (Built-in)", table_td_style), Paragraph("Persistent relational spatial database (<code>spatial_records.db</code>)", table_td_style)],
         [Paragraph("<b>Data Processing</b>", table_td_style), Paragraph("Pandas", table_td_style), Paragraph(">=2.0.0", table_td_style), Paragraph("DataFrame filtering, spatial tabular analysis, and CSV interoperability", table_td_style)],
-        [Paragraph("<b>Certificate Engine</b>", table_td_style), Paragraph("ReportLab", table_td_style), Paragraph(">=4.0.0", table_td_style), Paragraph("Precision vector PDF generation for official 3D Bhu-Aadhaar Title Deeds", table_td_style)],
+        [Paragraph("<b>Certificate Engine</b>", table_td_style), Paragraph("ReportLab", table_td_style), Paragraph(">=4.0.0", table_td_style), Paragraph("Precision vector PDF generation for official 3D ULPIN Generator Title Deeds", table_td_style)],
         [Paragraph("<b>Cryptographic QR</b>", table_td_style), Paragraph("qrcode + Pillow", table_td_style), Paragraph("Latest", table_td_style), Paragraph("Generates scannable SVG and PNG QR verification payloads", table_td_style)],
         [Paragraph("<b>Schema Validation</b>", table_td_style), Paragraph("Pydantic", table_td_style), Paragraph(">=2.0.0", table_td_style), Paragraph("Strict typing and JSON schema enforcement across cadastre APIs", table_td_style)],
         [Paragraph("<b>Runtime / Env</b>", table_td_style), Paragraph("Python", table_td_style), Paragraph("3.10 / 3.11+", table_td_style), Paragraph("Core backend execution environment running on Windows / Linux", table_td_style)]
@@ -478,7 +478,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
          Paragraph("Flat buyers, real estate investors, mortgage banks", table_td_style),
          Paragraph("&bull; Instant title verification and RERA registration audit.<br/>"
                    "&bull; Interactive floor-by-floor dropdown displaying exact elevation bounds.<br/>"
-                   "&bull; Live 3D Bhu-Aadhaar certificate card preview.<br/>"
+                   "&bull; Live 3D ULPIN Generator certificate card preview.<br/>"
                    "&bull; 1-Click official PDF title certificate generation with cryptographic QR code.", table_td_style)],
 
         [Paragraph("<b>📐 Government Surveyor Mode</b>", table_td_style),
@@ -512,7 +512,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     # =========================================================================
     story.append(Paragraph("7. Cryptographic Title Security & QR Verification", h1_style))
     story.append(Paragraph(
-        "To prevent document forgery and fraudulent double-sales, Bhu-Aadhaar 3D implements end-to-end cryptographic sealing:",
+        "To prevent document forgery and fraudulent double-sales, 3D ULPIN Generator implements end-to-end cryptographic sealing:",
         body_style
     ))
     story.append(Paragraph("&bull; <b>SHA-256 Title Hash:</b> The vertical deed is sealed via an immutable SHA-256 hash incorporating all physical and legal attributes:", bullet_style))
@@ -543,7 +543,7 @@ def build_technical_pdf(filename="Bhu_Aadhaar_3D_Complete_Technical_Specificatio
     # =========================================================================
     story.append(Paragraph("8. Conclusion & SIH 2026 Competitive Edge", h1_style))
     story.append(Paragraph(
-        "Bhu-Aadhaar 3D transitions Indian land administration from historical 2D planar maps into a future-ready, three-dimensional geospatial infrastructure. "
+        "3D ULPIN Generator transitions Indian land administration from historical 2D planar maps into a future-ready, three-dimensional geospatial infrastructure. "
         "Key competitive differentiators include:",
         body_style
     ))

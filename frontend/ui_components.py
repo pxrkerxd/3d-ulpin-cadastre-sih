@@ -538,7 +538,7 @@ def render_figma_navbar(active_view="overview"):
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
                     <span style="font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 18px; line-height: 22px; color: #FFFFFF; letter-spacing: -0.01em;">
-                        BHU-AADHAAR 3D
+                        3D ULPIN GENERATOR
                     </span>
                     <span style="font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 10px; line-height: 13px; color: #00F2FE; letter-spacing: 0.08em;">
                         ISO 19152 CADASTRE
@@ -1315,7 +1315,7 @@ def render_figma_viewer_topbar(prop_data):
             )
 
     if st.session_state.get("show_share_modal"):
-        share_url = f"https://bhu-aadhaar3d.gov.in/cadastre/view?pid={prop_id}&auth=0x9f8b1c4e72"
+        share_url = f"https://3d-ulpin-generator.gov.in/cadastre/view?pid={prop_id}&auth=0x9f8b1c4e72"
         st.info(f"🔗 **Cryptographic 3D Viewer Link:** `{share_url}`")
 
 def render_figma_viewer_left_panel(prop_data, active_floor_name="Residential Floor 04"):
@@ -1609,7 +1609,7 @@ def render_bhu_aadhaar_card_preview(prop, floor_dict, ulpin_str, theme="dark"):
             <div style="background: #121829; border: 1px solid #00F2FE; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0, 242, 254, 0.15);">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #202B44; padding-bottom: 8px; margin-bottom: 10px;">
                     <div style="font-family: 'DM Sans', sans-serif; font-size: 11px; text-transform: uppercase; color: #00F2FE; font-weight: 800; letter-spacing: 0.06em;">
-                        BHU-AADHAAR SPATIAL TITLE CERTIFICATE
+                        3D ULPIN GENERATOR SPATIAL TITLE CERTIFICATE
                     </div>
                     <span style="font-family: 'Geist Mono', monospace; font-size: 10px; background: rgba(0, 230, 118, 0.15); color: #00E676; border: 1px solid #00E676; padding: 2px 8px; border-radius: 4px; font-weight: 700;">
                         DIGITALLY VERIFIED
@@ -1632,3 +1632,6 @@ def render_bhu_aadhaar_card_preview(prop, floor_dict, ulpin_str, theme="dark"):
         """)
     with c_qr:
         st.image(qr_bytes, caption="Scan to Verify 3D Title", width=140)
+
+# Alias for backward compatibility & modern naming
+render_3d_ulpin_card_preview = render_bhu_aadhaar_card_preview

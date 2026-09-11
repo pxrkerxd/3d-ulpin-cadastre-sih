@@ -1,5 +1,5 @@
 """
-Enhanced 3D ULPIN (Bhu-Aadhaar 3D) Generator & Decoder.
+Enhanced 3D ULPIN Generator & Decoder.
 Compliant with ISO 19152 (LADM Edition II) and Ministry of Rural Development standards.
 Incorporates Modulo-36 weighted check digits, strata classification, and cryptographic QR payloads.
 """
@@ -75,7 +75,7 @@ def generate_qr_code_svg(ulpin_3d: str, metadata: Dict[str, Any] = None) -> str:
     payload = {
         "ulpin_3d": ulpin_3d,
         "standard": "ISO-19152-LADM-Edition2",
-        "authority": "Bhu-Aadhaar 3D National Cadastre Portal",
+        "authority": "3D ULPIN Generator National Cadastre Portal",
         "status": "Digitally Verified"
     }
     if metadata:

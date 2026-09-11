@@ -1,10 +1,10 @@
 """
 Interactive 3D WebGL Digital Twin & Cadastral Operations Component for Streamlit.
-Renders the complete GeoAadhaar-3D platform inside Streamlit matching the official UI:
+Renders the complete 3D ULPIN Generator platform inside Streamlit matching the official UI:
 - Top Header with brand, 4 operational tabs, CORS RTK status
 - Left Floating Glassmorphism Controls: Exploded Floor Slider, Subsurface X-Ray Slider, Camera Presets, Strata Checkboxes
 - Interactive Three.js WebGL 3D scene (Surface, Apartments, Basements, Metro Tunnel, Water Mains, Air Rights)
-- Right Inspection Card with 3D ULPIN, ISO 19152 LADM metadata, QR code, and Bhu-Aadhaar 3D Title Deed Modal
+- Right Inspection Card with 3D ULPIN, ISO 19152 LADM metadata, QR code, and 3D ULPIN Generator Title Deed Modal
 - AI Floor Slicing Studio with Chart.js LiDAR Z-Density Histogram
 - 3D Topology Audit & Clash Detection Center
 """
@@ -63,7 +63,7 @@ def render_3d_digital_twin_component(
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>GeoAadhaar-3D Digital Twin - {property_name}</title>
+      <title>3D ULPIN Generator - {property_name}</title>
       
       <!-- Tailwind CSS -->
       <script src="https://cdn.tailwindcss.com"></script>
@@ -627,7 +627,7 @@ def render_3d_digital_twin_component(
           </div>
 
           <div class="ulpin-box">
-            <span class="text-[9px] text-slate-400 uppercase font-semibold">3D ULPIN (Bhu-Aadhaar 3D)</span>
+            <span class="text-[9px] text-slate-400 uppercase font-semibold">3D ULPIN Generator</span>
             <div class="ulpin-code" id="card-ulpin">{base_ulpin}-BLD-F04-A402-K</div>
           </div>
 
@@ -657,18 +657,18 @@ def render_3d_digital_twin_component(
           </div>
 
           <button onclick="openDeedModal()" class="btn-primary">
-            <i data-lucide="file-text" class="w-3.5 h-3.5"></i> View Official Bhu-Aadhaar 3D Deed
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i> View Official 3D ULPIN Generator Deed
           </button>
         </aside>
 
       </div>
 
-      <!-- Bhu-Aadhaar 3D Deed Modal -->
+      <!-- 3D ULPIN Generator Deed Modal -->
       <div class="modal-overlay" id="deed-modal">
         <div class="cert-sheet">
           <div class="text-center border-b-2 border-sky-600 pb-3 mb-4">
             <div class="text-xs font-bold text-sky-800 tracking-wider">GOVERNMENT OF INDIA • MINISTRY OF RURAL DEVELOPMENT</div>
-            <div class="text-lg font-extrabold text-slate-900 mt-1">BHU-AADHAAR 3D DIGITAL RECORD OF RIGHTS (RoR)</div>
+            <div class="text-lg font-extrabold text-slate-900 mt-1">3D ULPIN GENERATOR DIGITAL RECORD OF RIGHTS (RoR)</div>
             <div class="text-xs text-slate-600">VOLUMETRIC PROPERTY OWNERSHIP PASSBOOK • ISO 19152 LADM CERTIFIED</div>
           </div>
           

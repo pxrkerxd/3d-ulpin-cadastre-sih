@@ -33,7 +33,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Running Header (on pages after cover/first page)
         if self._pageNumber > 1:
-            self.drawString(54, letter[1] - 36, "BHU-AADHAAR 3D | Comprehensive Project Technical & Architecture Report")
+            self.drawString(54, letter[1] - 36, "3D ULPIN GENERATOR | Comprehensive Project Technical & Architecture Report")
             self.drawRightString(letter[0] - 54, letter[1] - 36, "SIH 2026 Innovation")
             self.setStrokeColor(colors.HexColor("#e2e8f0"))
             self.setLineWidth(0.75)
@@ -181,7 +181,7 @@ def build_pdf(filename="Bhu_Aadhaar_3D_Comprehensive_Project_Report.pdf"):
     story.append(badge_table)
     story.append(Spacer(1, 10))
 
-    story.append(Paragraph("BHU-AADHAAR 3D", title_style))
+    story.append(Paragraph("3D ULPIN GENERATOR", title_style))
     story.append(Paragraph("Next-Generation 3D Spatial Cadastre, Subsurface Collision Engine & Vertical Land Registry Portal", subtitle_style))
     story.append(Paragraph("<b>Author / Lead:</b> Parijat Sharma &bull; <b>Project:</b> SIH 2026 National Innovation &bull; <b>Framework:</b> Python, Streamlit, PyDeck (Deck.gl), SQLite, ReportLab", meta_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0284c7"), spaceAfter=14, spaceBefore=6))
@@ -203,7 +203,7 @@ def build_pdf(filename="Bhu_Aadhaar_3D_Comprehensive_Project_Report.pdf"):
     story.append(Paragraph("&bull; <b>Catastrophic Subsurface Encroachments:</b> Deep private foundations and underground parking lots often collide with or breach safety buffers of underground metro tunnels, gas conduits, water mains, and optic fiber networks.", bullet_style))
     story.append(Paragraph("&bull; <b>Title Disputes & Double Mortgaging:</b> Absence of a unique, immutable vertical parcel identifier allows fraudulent sale or overlapping conveyance of individual floor units.", bullet_style))
     story.append(Paragraph(
-        "<b>The Solution:</b> <i>Bhu-Aadhaar 3D</i> provides an ISO 19152 compliant 3D cadastral platform featuring real-time volumetric floor slicing, automated 3D subsurface collision detection, a 14-digit + vertical ULPIN standard, cryptographic title certificate issuance with QR verification, and role-based workflows for Citizens, Surveyors, and Sub-Registrars.",
+        "<b>The Solution:</b> <i>3D ULPIN Generator</i> provides an ISO 19152 compliant 3D cadastral platform featuring real-time volumetric floor slicing, automated 3D subsurface collision detection, a 14-digit + vertical ULPIN standard, cryptographic title certificate issuance with QR verification, and role-based workflows for Citizens, Surveyors, and Sub-Registrars.",
         body_style
     ))
     story.append(Spacer(1, 8))
@@ -278,7 +278,7 @@ def build_pdf(filename="Bhu_Aadhaar_3D_Comprehensive_Project_Report.pdf"):
     story.append(Paragraph("&bull; <b>Subsurface (Basements, $Z_{base} < 0$):</b> Extends downwards below surface datum $[-(f \\cdot h),\\; -((f+1) \\cdot h)]$. Floor number is recorded as $-(f+1)$ to denote subterranean depth.", bullet_style))
 
     # Engine B
-    story.append(Paragraph("3.2 14-Digit Bhu-Aadhaar + 3D Vertical ULPIN Standard (<code>core/ulpin_logic.py</code>)", h2_style))
+    story.append(Paragraph("3.2 14-Digit Base ULPIN + 3D ULPIN Generator Standard (<code>core/ulpin_logic.py</code>)", h2_style))
     story.append(Paragraph(
         "India's Ministry of Rural Development specifies a 14-digit Unique Land Parcel Identification Number (ULPIN) derived from Local Government Directory (LGD) codes: <code>SS-DD-SSS-VVV-PPPP</code> (State 2 digits, District 2 digits, Sub-District 3 digits, Village/Ward 3 digits, Plot ID 4 digits).",
         body_style
@@ -329,7 +329,7 @@ def build_pdf(filename="Bhu_Aadhaar_3D_Comprehensive_Project_Report.pdf"):
          Paragraph("Citizens, Flat Buyers, Real Estate Investors, Banks", body_style),
          Paragraph("&bull; Instant title verification & RERA status check<br/>"
                    "&bull; Unit/Floor level dropdown with height bounds<br/>"
-                   "&bull; Live 3D Bhu-Aadhaar certificate card preview<br/>"
+                   "&bull; Live 3D ULPIN Generator certificate card preview<br/>"
                    "&bull; 1-Click official PDF title certificate download", body_style)],
 
         [Paragraph("<b>Government GIS Surveyor Mode</b>", body_style),
@@ -416,7 +416,7 @@ def build_pdf(filename="Bhu_Aadhaar_3D_Comprehensive_Project_Report.pdf"):
     # -------------------------------------------------------------
     story.append(Paragraph("7. SIH 2026 Impact & Competitive Advantages", h1_style))
     story.append(Paragraph(
-        "<i>Bhu-Aadhaar 3D</i> provides an end-to-end, working implementation addressing the exact needs of modern smart cities and land governance:",
+        "<i>3D ULPIN Generator</i> provides an end-to-end, working implementation addressing the exact needs of modern smart cities and land governance:",
         body_style
     ))
     story.append(Paragraph("&bull; <b>Fully Functional Math & Slicing:</b> Not just mockups—every parcel slices dynamically, computes FSI, and calculates real Haversine & Z-overlap collisions.", bullet_style))

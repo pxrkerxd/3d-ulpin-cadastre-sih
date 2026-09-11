@@ -1,4 +1,4 @@
-# 🏙️ Bhu-Aadhaar 3D: Pan-India 3D Cadastral System
+# 🏙️ 3D ULPIN Generator: Pan-India 3D Cadastral System
 ### ISO 19152 Compliant Next-Generation 3D Spatial Cadastre, Subsurface Collision Engine, AI Slicing & Vertical Land Registry Portal
 
 **Lead Team:** Ctrl Alt Defeat  
@@ -16,7 +16,7 @@ This architectural limitation introduces severe systemic risks:
 * **Catastrophic Subsurface Encroachments:** Deep private foundations and underground parking lots often collide with or breach the safety buffers of underground metro tunnels, high-voltage power conduits, gas lines, and water aqueducts.
 * **Title Disputes & Double Mortgaging:** The absence of a unique, immutable vertical parcel identifier allows fraudulent sales or overlapping conveyance of individual floor units.
 
-**The Solution:** **Bhu-Aadhaar 3D** provides an ISO 19152 compliant 3D cadastral platform featuring real-time procedural WebGL digital twins, automated AI LiDAR floor slicing, 3D subterranean collision detection, a 14-digit + vertical ULPIN standard with Modulo-36 check digits, role-based workflows, and tamper-proof SHA-256 cryptographic title certificate issuance with mobile QR verification.
+**The Solution:** **3D ULPIN Generator** provides an ISO 19152 compliant 3D cadastral platform featuring real-time procedural WebGL digital twins, automated AI LiDAR floor slicing, 3D subterranean collision detection, a 14-digit + vertical ULPIN standard with Modulo-36 check digits, role-based workflows, and tamper-proof SHA-256 cryptographic title certificate issuance with mobile QR verification.
 
 ---
 
@@ -94,7 +94,7 @@ The system contains a master dataset of **25 multi-strata properties valued at �
 
 ---
 
-## 🔏 4. Building ULPIN (Bhu-Aadhaar 3D) Numbering Logic
+## 🔏 4. 3D ULPIN Generator Numbering Logic
 
 ### 4.1 14-Digit Base ULPIN Structure
 Conforming to Ministry of Rural Development & DILRMP standards:
@@ -168,14 +168,14 @@ $$\text{Remainder} = \left(\sum \text{val}(c_i) \times w_i\right) \pmod{36}, \qu
 | **Styling & Design** | **Tailwind CSS**, **Vanilla CSS**, **Lucide Icons** | Figma glassmorphic design system, light/dark theme switching, KPI metric cards |
 | **Data Analytics** | **Chart.js**, **Streamlit Native Charts** | Real-time LiDAR Z-density profiling and metro-wise asset valuation charts |
 | **Database & Storage** | **SQLite3** (`spatial_records.db`), **Pandas** | Relational spatial database, SQL querying, tabular inspection, and CSV exports |
-| **Certificate Engine** | **ReportLab**, **qrcode**, **Pillow** | Official Bhu-Aadhaar 3D vector PDF certificates and scannable QR payloads |
+| **Certificate Engine** | **ReportLab**, **qrcode**, **Pillow** | Official 3D ULPIN Generator vector PDF certificates and scannable QR payloads |
 | **Validation & Schema** | **Pydantic (v2)**, **Python Math** | Data validation schemas, Haversine spatial math, and Shoelace polygon calculations |
 
 ---
 
 ## 👥 7. Role-Based Operational Workflows
 
-* **🏠 Citizen / Homebuyer Mode:** Unit-level ownership verification, height bounds review, RERA status check, live 3D Bhu-Aadhaar certificate card preview, and 1-click official PDF title certificate download.
+* **🏠 Citizen / Homebuyer Mode:** Unit-level ownership verification, height bounds review, RERA status check, live 3D ULPIN Generator certificate card preview, and 1-click official PDF title certificate download.
 * **📐 Government GIS Surveyor Mode:** 3D spatial metrics (Gross Volume $m^3$, Built-up area $m^2$, FSI/FAR), automated subsurface 3D clash audits, interactive vertical cross-section stacks, AI LiDAR point cloud floor segmentation, and SQLite coordinate ingestion.
 * **🏛️ Sub-Registrar Mode:** Vertical airspace deed conveyance simulator, automatic 6% state stamp duty calculation, immutable ownership conveyance updates directly in `spatial_records.db`, and audit trail verification.
 

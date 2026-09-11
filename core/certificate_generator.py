@@ -41,7 +41,7 @@ def generate_qr_code_image(data_dict):
 
 def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
     """
-    Generates an official Government of India 3D Bhu-Aadhaar Property Title Certificate (PDF).
+    Generates an official Government of India 3D ULPIN Generator Property Title Certificate (PDF).
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -118,7 +118,7 @@ def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
     story.append(Paragraph("GOVERNMENT OF INDIA", header_title_style))
     story.append(Paragraph("MINISTRY OF RURAL DEVELOPMENT &bull; DEPARTMENT OF LAND RESOURCES", ParagraphStyle('dept', alignment=1, fontSize=8, textColor=colors.HexColor('#64748b'))))
     story.append(Spacer(1, 4))
-    story.append(Paragraph("BHU-AADHAAR (3D ULPIN) SPATIAL PROPERTY CERTIFICATE", header_sub_style))
+    story.append(Paragraph("3D ULPIN GENERATOR SPATIAL PROPERTY CERTIFICATE", header_sub_style))
     story.append(Paragraph("Issued under National Land Records Modernization Programme (DILRMP-3D Cadastre Standard)", ParagraphStyle('std', alignment=1, fontSize=7, textColor=colors.HexColor('#64748b'))))
     story.append(Spacer(1, 14))
 
@@ -145,7 +145,7 @@ def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
     )
 
     qr_payload = {
-        "portal": "https://dilrmp.gov.in/bhu-aadhaar-3d",
+        "portal": "https://dilrmp.gov.in/3d-ulpin-generator",
         "3d_ulpin": ulpin_str,
         "owner": effective_owner,
         "plot": prop_plot,
@@ -168,7 +168,7 @@ def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
 
     table_data = [
         [
-            Paragraph("3D Bhu-Aadhaar (ULPIN):", label_style),
+            Paragraph("3D ULPIN Generator (ULPIN):", label_style),
             Paragraph(f"<b>{ulpin_str}</b>", ulpin_style),
             rl_qr_image
         ],
@@ -254,7 +254,7 @@ def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
 
     # 5. Statutory Footnote & Disclaimer
     footer_text = (
-        "<b>STATUTORY NOTICE:</b> This 3D Bhu-Aadhaar Certificate delineates vertical spatial boundaries "
+        "<b>STATUTORY NOTICE:</b> This 3D ULPIN Generator Certificate delineates vertical spatial boundaries "
         "pursuant to ISO 19152 (Land Administration Domain Model). Possession or conveyance of this vertical parcel "
         "must be registered in accordance with the Registration Act, 1908 and State Real Estate Regulatory Authority (RERA) norms."
     )
@@ -263,3 +263,6 @@ def generate_bhu_aadhaar_pdf(prop, floor_dict, ulpin_str):
     doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
+
+# Alias for backward compatibility & modern naming
+generate_3d_ulpin_pdf = generate_bhu_aadhaar_pdf
