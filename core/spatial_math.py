@@ -186,6 +186,16 @@ def segment_building(total_height, base_elevation=0, floor_height=3.2, archetype
     Slices a property into individual 3D volumetric units/floors with authentic,
     landmark-specific floor nomenclature and architectural designations, including unique owners.
     """
+    if isinstance(floor_height, str):
+        # Handle case where archetype was passed as 3rd positional argument
+        archetype = floor_height
+        floor_height = 3.2
+
+    try:
+        floor_height = float(floor_height)
+    except (ValueError, TypeError):
+        floor_height = 3.2
+
     profile = ARCHETYPE_FLOOR_PROFILES.get(archetype)
     is_res = (property_type and "Apartment" in property_type) or (property_name and "Residency" in property_name)
     

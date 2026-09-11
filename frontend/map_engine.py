@@ -76,10 +76,11 @@ CITY_VIEWPORTS = {
     "Kolkata (KMC - New Town IT Hub & Underwater Metro)": {"lat": 22.5830, "lon": 88.4000, "zoom": 13.2, "pitch": 58, "bearing": 20, "radius": 130, "scale": 1},
 }
 
-def render_3d_map(df, selected_region="🇮🇳 Pan-India (National Cadastre)", custom_center=None, map_theme="Dark Matter (Default)"):
+def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark Matter (Default)", selected_property_id=None):
     """
     Renders an interactive, futuristic 3D Cadastral Deck.gl map.
     Supports pan-India continent scale down to micro-parcel vertical footprints.
+    Highlights the selected parcel with vibrant cyan and ground beacon halo.
     """
     if df.empty:
         # Fallback empty view centered on India
@@ -88,8 +89,14 @@ def render_3d_map(df, selected_region="🇮🇳 Pan-India (National Cadastre)", 
 
     map_df = df.copy()
 
-    # Determine colors
-    map_df['color'] = map_df['type'].apply(lambda x: COLOR_PALETTE.get(x, [148, 163, 184, 220]))
+    # Determine colors - highlight selected parcel in bright cyber cyan
+    if selected_property_id is not None:
+        map_df['color'] = map_df.apply(
+            lambda r: [0, 242, 254, 255] if r['property_id'] == selected_property_id else COLOR_PALETTE.get(r['type'], [148, 163, 184, 220]),
+            axis=1
+        )
+    else:
+        map_df['color'] = map_df['type'].apply(lambda x: COLOR_PALETTE.get(x, [148, 163, 184, 220]))
     
     # Tooltip label formatting
     map_df['elevation_label'] = map_df.apply(
@@ -104,18 +111,18 @@ def render_3d_map(df, selected_region="🇮🇳 Pan-India (National Cadastre)", 
 
     # Determine camera view state & scale
     pan_india_default = CITY_VIEWPORTS.get("🇮🇳 Pan-India (National Cadastre)") or CITY_VIEWPORTS.get("🇮🇳 Pan-India (Subcontinent)") or list(CITY_VIEWPORTS.values())[0]
-    preset = CITY_VIEWPORTS.get(selected_region, pan_india_default)
+    preset = CITY_VIEWPORTS.get(selected_region, pan_india_default) if selected_region else pan_india_default
     
     if custom_center:
         # Focusing on a specific selected property
         view_lat = custom_center['lat']
         view_lon = custom_center['lon']
-        zoom = 16.2
+        zoom = 16.4
         pitch = 65
         bearing = 35
         radius = 55
         elevation_scale = 1
-    elif selected_region.startswith("🇮🇳") or "Pan-India" in selected_region:
+    elif selected_region and (selected_region.startswith("🇮🇳") or "Pan-India" in selected_region):
         view_lat = preset["lat"]
         view_lon = preset["lon"]
         zoom = preset["zoom"]
@@ -124,7 +131,7 @@ def render_3d_map(df, selected_region="🇮🇳 Pan-India (National Cadastre)", 
         radius = preset["radius"]
         elevation_scale = preset["scale"]
     else:
-        # Specific city selected
+        # Specific city or preset selected
         view_lat = preset["lat"]
         view_lon = preset["lon"]
         zoom = preset["zoom"]
@@ -172,6 +179,25 @@ def render_3d_map(df, selected_region="🇮🇳 Pan-India (National Cadastre)", 
         pickable=False
     )
     layers.append(scatter_layer)
+
+    # 3. Dedicated Glowing Beacon Ring for Selected Property
+    if selected_property_id is not None:
+        sel_subset = map_df[map_df['property_id'] == selected_property_id]
+        if not sel_subset.empty:
+            sel_halo = pdk.Layer(
+                'ScatterplotLayer',
+                id="selected-beacon-halo",
+                data=sel_subset,
+                get_position='[lon, lat]',
+                get_radius=radius * 2.2,
+                get_fill_color=[0, 242, 254, 70],
+                get_line_color=[0, 242, 254, 255],
+                line_width_min_pixels=3,
+                stroked=True,
+                filled=True,
+                pickable=False
+            )
+            layers.append(sel_halo)
 
     # Add Satellite raster tile layers if satellite mode is selected
     if "Satellite" in map_theme:
