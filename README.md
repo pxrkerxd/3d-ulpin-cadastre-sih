@@ -98,8 +98,24 @@ The system contains a master dataset of **25 multi-strata properties valued at �
 
 ### 4.1 14-Digit Base ULPIN Structure
 Conforming to Ministry of Rural Development & DILRMP standards:
-$$\underbrace{\text{SS}}_{\text{State (2d)}} - \underbrace{\text{DD}}_{\text{District (2d)}} - \underbrace{\text{SSS}}_{\text{Sub-District (3d)}} - \underbrace{\text{VVV}}_{\text{Village/Ward (3d)}} - \underbrace{\text{PPPP}}_{\text{Plot ID (4d)}}$$
-*Example:* `27211010500101` (Maharashtra `27`, Thane/Navi Mumbai `21`, Belapur Sub-dist `101`, Seawoods Ward `050`, Parcel `0101`).
+
+```
+[SS] - [DD] - [SSS] - [VVV] - [PPPP]
+ │      │       │       │       │
+ │      │       │       │       └── Plot Identifier (4 digits)
+ │      │       │       └────────── Village / Ward (3 digits)
+ │      │       └────────────────── Sub-District / Tehsil (3 digits)
+ │      └────────────────────────── District Code (2 digits)
+ └───────────────────────────────── State Code (2 digits)
+```
+
+* **Standard Format:** `[SS]-[DD]-[SSS]-[VVV]-[PPPP]`
+* **Sample 14-Digit Base Parcel:** `27211010500101`
+  * **State (`27`):** Maharashtra
+  * **District (`21`):** Thane / Navi Mumbai
+  * **Sub-District (`101`):** Belapur
+  * **Village / Ward (`050`):** Seawoods
+  * **Plot Identifier (`0101`):** Parcel 0101
 
 ### 4.2 3D ISO 19152 Vertical Extension
 * **Superstructure (Above Ground):** Appends `-FFF` (e.g., `-004` for Floor 4, `-000` for Ground).
