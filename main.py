@@ -16,6 +16,8 @@ from frontend.ui_components import (
     render_html,
     inject_custom_theme, 
     render_figma_navbar,
+    render_breadcrumb,
+    render_government_footer,
     render_landing_hero,
     render_citizen_dashboard,
     render_figma_digital_title_certificate,
@@ -39,19 +41,19 @@ from core.ulpin_enhanced import generate_enhanced_3d_ulpin, generate_qr_code_svg
 from data.mock_lidar import generate_synthetic_building_lidar
 from frontend.digital_twin_component import render_3d_digital_twin_component
 
-# Page configuration matching Figma 1440px dark space layout
+# Official Government Portal Page Configuration
 st.set_page_config(
     layout="wide", 
-    page_title="3D ULPIN GENERATOR | ISO 19152 Spatial Cadastre", 
-    page_icon="🏙️",
+    page_title="3D ULPIN & Digital Cadastre Portal | Government of India", 
+    page_icon="🏛️",
     initial_sidebar_state="collapsed"
 )
 
 # Initialize Session State
 if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark"
+    st.session_state["theme"] = "light"
 if "nav_role" not in st.session_state:
-    st.session_state["nav_role"] = "🌟 Overview & Gateway"
+    st.session_state["nav_role"] = "🏛️ Overview & Gateway"
 if "show_full_certificate" not in st.session_state:
     st.session_state["show_full_certificate"] = False
 if "xray_active" not in st.session_state:
@@ -59,18 +61,18 @@ if "xray_active" not in st.session_state:
 if "force_twin_view" not in st.session_state:
     st.session_state["force_twin_view"] = False
 if "basemap_aesthetic" not in st.session_state:
-    st.session_state["basemap_aesthetic"] = "Dark Matter (Default)"
+    st.session_state["basemap_aesthetic"] = "☀️ Minimalist Light (Gov Standard)"
 
 current_theme = st.session_state["theme"]
 
 # Invalidate any stale Streamlit data caches
 st.cache_data.clear()
 
-# Apply curated Figma design system
+# Apply curated Government Design System
 inject_custom_theme(theme=current_theme)
 
-# Render Figma Top Navbar
-render_figma_navbar(active_view=st.session_state["nav_role"])
+# Render Official Government Utility Bar & Department Header
+render_figma_navbar(active_view=st.session_state["nav_role"], theme=current_theme)
 
 # -------------------------------------------------------------
 # DATABASE DATA LOADER
@@ -97,17 +99,37 @@ except Exception as e:
     st.stop()
 
 # -------------------------------------------------------------
-# GLOBAL 3D ULPIN SEARCH & INSTANT DECODER BAR
+# GLOBAL 3D ULPIN VERIFICATION & TITLE SEARCH BAR
 # -------------------------------------------------------------
-c_search, c_btn = st.columns([4.2, 1.0], gap="small")
+render_html("""
+    <div class="glass-panel" style="background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1.5px solid rgba(255, 255, 255, 0.85); border-radius: 14px; padding: 14px 20px; margin-bottom: 14px; box-shadow: 0 8px 32px rgba(11, 60, 93, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.95);">
+        <div style="font-size: 15px; font-weight: 700; color: #0B3C5D;">
+            3D ULPIN Verification & Title Search / भू-आधार सत्यापन
+        </div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 3px;">
+            Verify 14-digit standardized Bhu-Aadhaar ULPIN (e.g. <code>27211010500101-004</code>) or search property by name across national 3D cadastre.
+        </div>
+    </div>
+""")
+c_search, c_btn, c_thm = st.columns([3.5, 1.1, 1.0], gap="small")
 with c_search:
     search_query = st.text_input(
-        "🔍 Global 3D ULPIN / Title Verification Search:",
-        placeholder="Search by 14-digit ULPIN (e.g. 27211010500101-004) or Property Name (e.g. Sky Heights, Seawoods, GIFT One)...",
+        "Global 3D ULPIN / Title Verification Search:",
+        placeholder="Enter 14-digit ULPIN (e.g. 27211010500101-004) or Property Name (e.g. Seawoods, Sky Heights, GIFT One)...",
         label_visibility="collapsed"
     )
 with c_btn:
-    search_clicked = st.button("🔎 Verify & Locate", use_container_width=True)
+    search_clicked = st.button("🔍 Verify ULPIN", type="primary", use_container_width=True)
+with c_thm:
+    dark_mode_val = st.toggle("🌙 Dark Mode", value=(st.session_state.get("theme", "light") == "dark"), key="theme_toggle_switch")
+    if dark_mode_val and st.session_state.get("theme") != "dark":
+        st.session_state["theme"] = "dark"
+        st.session_state["basemap_aesthetic"] = "🌙 Modern Dark GIS (Carto Dark)"
+        st.rerun()
+    elif not dark_mode_val and st.session_state.get("theme") != "light":
+        st.session_state["theme"] = "light"
+        st.session_state["basemap_aesthetic"] = "☀️ Minimalist Light (Gov Standard)"
+        st.rerun()
 
 searched_prop_id = None
 searched_floor_target = None
@@ -120,13 +142,13 @@ if search_query.strip():
             searched_prop_id = decoded["plot_id"]
             searched_floor_target = decoded["floor_number"]
             render_html(f"""
-                <div style="background: rgba(0, 242, 254, 0.11); border: 1px solid #00F2FE; border-radius: 8px; padding: 10px 16px; margin: 10px 0 16px 0; display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+                <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-left: 4px solid #138808; border-radius: 4px; padding: 10px 16px; margin: 10px 0 14px 0; display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
                     <div>
-                        <span style="font-weight: 700; color: #00F2FE;">Parsed 3D ULPIN:</span>
-                        <code style="color: #FFFFFF; background: #1A2238; padding: 2px 8px; border-radius: 4px; margin-left: 6px; font-family: 'Geist Mono', monospace;">{decoded['raw_ulpin']}</code>
+                        <span style="font-weight: 700; color: #138808;">✓ ULPIN Verified Authentic:</span>
+                        <code style="color: #0B3C5D; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 2px 8px; border-radius: 3px; margin-left: 6px; font-family: 'Consolas', monospace; font-weight: 700;">{decoded['raw_ulpin']}</code>
                         &bull; State: <b>{decoded['state_name']}</b> &bull; Plot: <b>#{decoded['plot_id']}</b>
                     </div>
-                    <span style="background: rgba(0, 230, 118, 0.15); color: #00E676; border: 1px solid #00E676; padding: 2px 10px; border-radius: 4px; font-weight: 700; font-family: 'Geist Mono', monospace; font-size: 11px;">
+                    <span style="background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; padding: 2px 8px; border-radius: 3px; font-weight: 700; font-size: 11px;">
                         {decoded['floor_description']}
                     </span>
                 </div>
@@ -142,31 +164,31 @@ elif search_clicked:
     st.info("💡 Please enter a 14-digit ULPIN (e.g. 27211010500101-004) or building name to locate it on the 3D cadastre.")
 
 # -------------------------------------------------------------
-# FIGMA TOP VIEW NAVIGATION TABS
+# SINGLE-LEVEL GOVERNMENT NAVIGATION TABS
 # -------------------------------------------------------------
 view_tabs = [
-    "🌟 Overview & Gateway",
-    "🌐 3D Cadastre & Digital Twin Studio",
-    "🏠 Citizen / Homebuyer Portal",
+    "🏛️ Overview & Gateway",
+    "🌐 3D Cadastre & Digital Twin",
+    "🏠 Citizen Title Portal",
     "📐 GIS Surveyor Workstation",
     "⚠️ Subsurface Clash Engine",
-    "🏛️ Sub-Registrar (Revenue Officer) Mode"
+    "⚖️ Sub-Registrar Conveyance"
 ]
 
 # Robust session state role mapping
-current_role_raw = st.session_state.get("nav_role", "🌟 Overview & Gateway")
+current_role_raw = st.session_state.get("nav_role", "🏛️ Overview & Gateway")
 if "3D" in current_role_raw or "Twin" in current_role_raw or "Cadastre" in current_role_raw:
-    matched_tab = "🌐 3D Cadastre & Digital Twin Studio"
+    matched_tab = "🌐 3D Cadastre & Digital Twin"
 elif "Citizen" in current_role_raw:
-    matched_tab = "🏠 Citizen / Homebuyer Portal"
+    matched_tab = "🏠 Citizen Title Portal"
 elif "Surveyor" in current_role_raw:
     matched_tab = "📐 GIS Surveyor Workstation"
 elif "Clash" in current_role_raw:
     matched_tab = "⚠️ Subsurface Clash Engine"
-elif "Registrar" in current_role_raw:
-    matched_tab = "🏛️ Sub-Registrar (Revenue Officer) Mode"
+elif "Registrar" in current_role_raw or "Conveyance" in current_role_raw:
+    matched_tab = "⚖️ Sub-Registrar Conveyance"
 else:
-    matched_tab = "🌟 Overview & Gateway"
+    matched_tab = "🏛️ Overview & Gateway"
 
 # Clean up any stale locked key to prevent StreamlitAPIException
 if "figma_view_radio" in st.session_state:
@@ -190,7 +212,7 @@ else:
     st.session_state["active_view"] = selected_view
     st.session_state["nav_role"] = selected_view
 
-render_html("<div style='height: 12px;'></div>")
+render_html("<div style='height: 8px;'></div>")
 
 # -------------------------------------------------------------
 # ACTIVE 3D PARCEL SELECTION (PERSISTENT STATE)
@@ -227,17 +249,18 @@ active_ulpin = generate_ulpin(
 )
 
 # =============================================================
-# VIEW 1: FIGMA LANDING HERO & GATEWAY
+# VIEW 1: OVERVIEW & GATEWAY (DASHBOARD)
 # =============================================================
-if selected_view == "🌟 Overview & Gateway":
-    # Prominently display National KPI Summary
+if selected_view == "🏛️ Overview & Gateway":
+    render_breadcrumb("🏛️ Overview & Gateway")
     render_kpi_bar(df, theme=current_theme)
     render_landing_hero(df, active_prop=prop_data)
 
 # =============================================================
-# VIEW 2: 3D CADASTRE & DIGITAL TWIN STUDIO (Split-Screen GIS Studio)
+# VIEW 2: 3D CADASTRE & DIGITAL TWIN
 # =============================================================
-elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
+elif selected_view == "🌐 3D Cadastre & Digital Twin":
+    render_breadcrumb("🌐 3D Cadastre & Digital Twin", prop_data.get('name'))
     render_figma_viewer_topbar(prop_data)
     render_html("<div style='height: 4px;'></div>")
 
@@ -245,7 +268,7 @@ elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
     c_thm, c_filt, c_sub = st.columns([1.5, 1.5, 0.8], gap="medium")
     with c_thm:
         map_style_options = list(MAP_STYLES.keys())
-        default_basemap = "Dark Matter (Default)"
+        default_basemap = "☀️ Minimalist Light (Gov Standard)"
         if "basemap_aesthetic" not in st.session_state:
             st.session_state["basemap_aesthetic"] = default_basemap
         b_idx = map_style_options.index(st.session_state["basemap_aesthetic"]) if st.session_state["basemap_aesthetic"] in map_style_options else 0
@@ -282,15 +305,15 @@ elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
     if filtered_map_df.empty:
         filtered_map_df = display_df.copy()
 
-    # Sleek Inline Micro-Legend & Active Parcels Counter
+    # Clean Administrative Micro-Legend & Active Parcels Counter
     render_html(f"""
-        <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: flex-start; background: #121829; border: 1px solid #202B44; padding: 5px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 11px;">
-            <span><b style="color: #00d4ff;">●</b> Commercial</span>
-            <span><b style="color: #a855f7;">●</b> Residential</span>
-            <span><b style="color: #fb923c;">●</b> Parking</span>
-            <span><b style="color: #10b981;">●</b> Transit</span>
-            <span><b style="color: #f43f5e;">●</b> Subsurface Utility</span>
-            <span style="margin-left: auto; font-family: 'Geist Mono', monospace; color: #00F2FE; font-weight: 700;">Active: {len(filtered_map_df)} Parcels</span>
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: flex-start; background: #FFFFFF; border: 1px solid #CBD5E1; padding: 6px 14px; border-radius: 4px; margin-bottom: 8px; font-size: 11px;">
+            <span><b style="color: #135E96;">●</b> Commercial</span>
+            <span><b style="color: #166534;">●</b> Residential</span>
+            <span><b style="color: #475569;">●</b> Parking</span>
+            <span><b style="color: #D97706;">●</b> Transit Hub</span>
+            <span><b style="color: #B91C1C;">●</b> Subsurface Utility</span>
+            <span style="margin-left: auto; color: #0B3C5D; font-weight: 700;">Active: {len(filtered_map_df)} Parcels</span>
         </div>
     """)
 
@@ -379,10 +402,10 @@ elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
 
         # Quick Specs Bar
         render_html(f"""
-            <div style="background: #121829; border: 1px solid #202B44; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-                <span style="color: #6B7C9E; font-weight: 600;">{prop_data.get('type', 'Commercial')}</span>
-                <span style="font-family: 'Geist Mono', monospace; font-weight: 700; color: #00E676;">₹ {float(prop_data.get('valuation_cr', 0.0)):.1f} Cr</span>
-                <span style="font-family: 'Geist Mono', monospace; font-weight: 600; color: #00F2FE;">{float(prop_data.get('total_height', 0.0)):.0f}m Height</span>
+            <div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                <span style="color: #475569; font-weight: 600;">{prop_data.get('type', 'Commercial')}</span>
+                <span style="font-weight: 700; color: #138808;">₹ {float(prop_data.get('valuation_cr', 0.0)):.1f} Cr</span>
+                <span style="font-weight: 600; color: #0B3C5D;">{float(prop_data.get('total_height', 0.0)):.0f}m Height</span>
             </div>
         """)
 
@@ -499,9 +522,10 @@ elif selected_view == "🌐 3D Cadastre & Digital Twin Studio":
                 st.image(qr_uri, width=120, caption="Cryptographic 3D ULPIN Generator QR")
 
 # =============================================================
-# VIEW 3: FIGMA CITIZEN PORTFOLIO & OFFICIAL TITLE CERTIFICATE
+# VIEW 3: CITIZEN PORTFOLIO & OFFICIAL TITLE CERTIFICATE
 # =============================================================
-elif selected_view == "🏠 Citizen / Homebuyer Portal":
+elif selected_view == "🏠 Citizen Title Portal":
+    render_breadcrumb("🏠 Citizen Title Portal", prop_data.get('name'))
     c_sel, c_flr = st.columns([2, 1], gap="medium")
     with c_sel:
         cur_cit_idx = parcel_options.index(active_pid) if active_pid in parcel_options else 0
@@ -529,26 +553,26 @@ elif selected_view == "🏠 Citizen / Homebuyer Portal":
         )
         target_floor = next((f for f in floors if f['floor_number'] == sel_floor_num), floors[0])
 
-    # Figma Citizen Dashboard Banner & Registered Unit Cards
+    # Citizen Dashboard Banner & Registered Unit Cards
     render_citizen_dashboard(prop_data, floors, ulpin_str=active_ulpin)
 
-    render_html("<div style='height: 16px;'></div>")
+    render_html("<div style='height: 12px;'></div>")
 
     # Encumbrance & RERA Status Card
     render_html("""
-        <div style="background: #121829; border: 1px solid #202B44; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: #00F2FE; margin-bottom: 6px;">
-                🏛️ Official Title & Encumbrance Verification
+        <div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-left: 4px solid #138808; border-radius: 4px; padding: 14px 18px; margin-bottom: 16px;">
+            <div style="font-size: 14px; font-weight: 700; color: #0B3C5D; margin-bottom: 4px;">
+                🏛️ Official Title & Encumbrance Verification / विधिक स्वत्व स्थिति
             </div>
-            <div style="font-family: 'DM Sans', sans-serif; font-size: 13px; color: #A3B3D2; line-height: 1.6;">
-                &bull; <b>RERA Status:</b> <span style="color: #00E676; font-weight: 600;">Approved & Active (PRM/KA/RERA/1251/310/PR/2026)</span><br/>
-                &bull; <b>Encumbrance / Mortgage:</b> <span style="color: #00E676; font-weight: 600;">NIL (Clear Freehold Vertical Title)</span><br/>
+            <div style="font-size: 13px; color: #334155; line-height: 1.6;">
+                &bull; <b>RERA Registration:</b> <span style="color: #138808; font-weight: 600;">Approved & Active (PRM/KA/RERA/1251/310/PR/2026)</span><br/>
+                &bull; <b>Encumbrance Status:</b> <span style="color: #138808; font-weight: 600;">NIL (Clear Freehold Vertical Title)</span><br/>
                 &bull; <b>Building Height Sanction:</b> Compliant with Municipal Development Control Bye-Laws
             </div>
         </div>
     """)
 
-    # Live Digital 3D ULPIN Generator Certificate Preview with QR Code
+    # Live Digital Bhu-Aadhaar 3D Title Card Preview with QR Code
     render_bhu_aadhaar_card_preview(prop_data, target_floor, active_ulpin, theme=current_theme)
 
     # 1-Click Official Title PDF Download & Toggle for Full Parchment View
@@ -557,16 +581,16 @@ elif selected_view == "🏠 Citizen / Homebuyer Portal":
     with c_pdf1:
         pdf_bytes = generate_bhu_aadhaar_pdf(prop_data, target_floor, active_ulpin)
         st.download_button(
-            label="📥 Download Official 3D ULPIN Generator Certificate (PDF)",
+            label="📥 Download Official 3D Title Certificate (PDF)",
             data=pdf_bytes,
-            file_name=f"3D_ULPIN_Generator_Certificate_{active_ulpin}.pdf",
+            file_name=f"3D_Title_Certificate_{active_ulpin}.pdf",
             mime="application/pdf",
             type="primary",
             use_container_width=True
         )
     with c_pdf2:
         show_cert = st.session_state.get("show_full_certificate", False)
-        cert_btn_text = "📄 Hide Parchment View" if show_cert else "🛡️ View Authentic Parchment Deed"
+        cert_btn_text = "📄 Hide Parchment View" if show_cert else "🛡️ View Authentic Legal Title Deed"
         if st.button(cert_btn_text, key="cit_view_parchment_btn", use_container_width=True):
             st.session_state["show_full_certificate"] = not show_cert
             st.rerun()
@@ -576,17 +600,17 @@ elif selected_view == "🏠 Citizen / Homebuyer Portal":
         render_figma_digital_title_certificate(prop_data, target_floor, active_ulpin)
 
 # =============================================================
-# VIEW 4: FIGMA GIS SURVEYOR WORKSTATION
+# VIEW 4: GIS SURVEYOR WORKSTATION
 # =============================================================
 elif selected_view == "📐 GIS Surveyor Workstation":
-    # Figma Surveyor Workstation Header Banner
+    render_breadcrumb("📐 GIS Surveyor Workstation")
     render_figma_surveyor_workstation()
 
     c_map, c_queue = st.columns([1.75, 1.0], gap="large")
     with c_map:
         render_html("""
-            <div style="font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 18px; color: #FFFFFF; margin-bottom: 12px;">
-                Topographic Cadastral GIS Map
+            <div style="font-size: 16px; font-weight: 700; color: #0B3C5D; margin-bottom: 8px;">
+                Topographic Cadastral GIS Map / स्थानिक भू-नक्शा
             </div>
         """)
 
@@ -622,25 +646,25 @@ elif selected_view == "📐 GIS Surveyor Workstation":
         render_vertical_stack(floors, prop_data, theme=current_theme)
 
     with c_queue:
-        # Figma Survey Dispatch Queue with LiDAR triggers
+        # Survey Dispatch Queue with LiDAR triggers
         render_figma_survey_queue()
 
         # Ingest New 3D Parcel Coordinates into SQLite
         with st.expander("➕ Ingest New 3D Parcel Coordinates", expanded=False):
             with st.form("new_parcel_form"):
-                new_name = st.text_input("Building / Parcel Name:")
-                new_city = st.selectbox("City:", ["Navi Mumbai", "Mumbai", "Pune", "New Delhi", "Bengaluru", "GIFT City", "Hyderabad", "Chennai"])
-                new_type = st.selectbox("Type:", ["Commercial", "Apartment", "Underground Parking", "Transit Hub", "Subsurface Utility"])
+                new_name = st.text_input("Building / Parcel Name *:")
+                new_city = st.selectbox("City *:", ["Navi Mumbai", "Mumbai", "Pune", "New Delhi", "Bengaluru", "GIFT City", "Hyderabad", "Chennai"])
+                new_type = st.selectbox("Classification *:", ["Commercial", "Apartment", "Underground Parking", "Transit Hub", "Subsurface Utility"])
                 n_col1, n_col2 = st.columns(2)
                 with n_col1:
-                    new_lat = st.number_input("Latitude:", value=float(prop_data['lat']), format="%.5f")
-                    new_height = st.number_input("Height (m):", value=48.0, min_value=3.0)
+                    new_lat = st.number_input("Latitude *:", value=float(prop_data['lat']), format="%.5f")
+                    new_height = st.number_input("Height (m) *:", value=48.0, min_value=3.0)
                 with n_col2:
-                    new_lon = st.number_input("Longitude:", value=float(prop_data['lon']), format="%.5f")
-                    new_base_elev = st.number_input("Base Elevation (m):", value=0.0)
-                new_owner = st.text_input("Owner / Developer:", value="Municipal Development Authority")
+                    new_lon = st.number_input("Longitude *:", value=float(prop_data['lon']), format="%.5f")
+                    new_base_elev = st.number_input("Base Elevation (m) *:", value=0.0)
+                new_owner = st.text_input("Owner / Developer *:", value="Municipal Development Authority")
                 
-                submitted = st.form_submit_button("Commit to Spatial Database", type="primary")
+                submitted = st.form_submit_button("Commit to Cadastral Database", type="primary")
                 if submitted and new_name.strip():
                     db_path = os.path.join(os.path.dirname(__file__), 'database', 'spatial_records.db')
                     conn = sqlite3.connect(db_path)
@@ -658,23 +682,25 @@ elif selected_view == "📐 GIS Surveyor Workstation":
                     st.rerun()
 
 # =============================================================
-# VIEW 5: FIGMA SUBSURFACE CLASH REPORT & NATIONAL AUDIT
+# VIEW 5: SUBSURFACE CLASH REPORT & CORRIDOR AUDIT
 # =============================================================
 elif selected_view == "⚠️ Subsurface Clash Engine":
+    render_breadcrumb("⚠️ Subsurface Clash Engine", prop_data.get('name'))
     conflicts = check_parcel_conflicts(prop_data, df, safety_buffer=25.0)
     render_figma_clash_report(conflicts, prop_data)
 
 # =============================================================
 # VIEW 6: SUB-REGISTRAR (REVENUE OFFICER) MODE
 # =============================================================
-elif selected_view == "🏛️ Sub-Registrar (Revenue Officer) Mode":
+elif selected_view == "⚖️ Sub-Registrar Conveyance":
+    render_breadcrumb("⚖️ Sub-Registrar Conveyance", prop_data.get('name'))
     render_html("""
-        <div style="background: #121829; border: 1px solid #202B44; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;">
-            <div style="font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 20px; color: #FFFFFF;">
-                🏛️ Sub-Registrar Vertical Deed Transfer & Stamp Duty Simulator
+        <div style="background: #FFFFFF; border: 1px solid #CBD5E1; border-left: 4px solid #0B3C5D; border-radius: 4px; padding: 16px 20px; margin-bottom: 16px;">
+            <div style="font-size: 18px; font-weight: 700; color: #0B3C5D;">
+                🏛️ Sub-Registrar Vertical Deed Transfer & Stamp Duty Conveyance
             </div>
-            <div style="font-family: 'DM Sans', sans-serif; font-size: 13px; color: #A3B3D2; margin-top: 4px;">
-                Legally transfer individual vertical airspace titles with immutable cryptographic deed records and automated stamp duty calculations.
+            <div style="font-size: 12px; color: #64748B; margin-top: 4px;">
+                Legally convey individual vertical airspace titles with immutable cryptographic deed records and automated state stamp duty calculations.
             </div>
         </div>
     """)
@@ -693,7 +719,7 @@ elif selected_view == "🏛️ Sub-Registrar (Revenue Officer) Mode":
     with c_tr2:
         buyer_name = st.text_input("Grantee (New Buyer):", placeholder="e.g. Parijat Sharma / Reliance Infra")
         stamp_duty = (float(prop_data.get('valuation_cr', 0)) * 0.06)
-        st.info(f"Calculated State Stamp Duty (6%): **₹ {stamp_duty:.2f} Crores** | Registration Status: **Verified OK**")
+        st.info(f"Calculated State Stamp Duty (6%): **₹ {stamp_duty:.2f} Crores** | Status: **Verified Clear Title**")
 
     if st.button("✍️ Execute Digital Vertical Deed Transfer", type="primary", use_container_width=True):
         if not buyer_name.strip():
@@ -712,9 +738,9 @@ elif selected_view == "🏛️ Sub-Registrar (Revenue Officer) Mode":
     render_vertical_stack(floors, prop_data, theme=current_theme)
 
 # -------------------------------------------------------------
-# BOTTOM DRAWER: MASTER CADASTRAL DATABASE & NATIONAL AUDIT
+# MASTER CADASTRAL DATABASE DRAWER & NATIONAL AUDIT
 # -------------------------------------------------------------
-render_html("<div style='height: 24px;'></div>")
+render_html("<div style='height: 20px;'></div>")
 with st.expander("🗄️ National 3D Cadastral Registry & All-India Clash Audit", expanded=False):
     t1, t2, t3 = st.tabs([
         "📋 Tabular Cadastre Register", 
@@ -744,3 +770,8 @@ with st.expander("🗄️ National 3D Cadastral Registry & All-India Clash Audit
             st.caption("Asset Valuation by Metro Region (₹ Crores)")
             if 'city' in df.columns and 'valuation_cr' in df.columns:
                 st.bar_chart(df.groupby('city')['valuation_cr'].sum())
+
+# -------------------------------------------------------------
+# OFFICIAL GOVERNMENT OF INDIA / NIC FOOTER
+# -------------------------------------------------------------
+render_government_footer()

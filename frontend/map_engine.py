@@ -1,13 +1,13 @@
 import pydeck as pdk
 import pandas as pd
 
-# Curated High-Tech Neon Palette for 3D Cadastral Visualization
+# Official Administrative GIS Palette for 3D Cadastral Visualization
 COLOR_PALETTE = {
-    'Commercial': [0, 212, 255, 230],          # Neon Cyan
-    'Apartment': [168, 85, 247, 230],          # Electric Violet
-    'Underground Parking': [251, 146, 60, 240],# Glowing Amber
-    'Transit': [16, 185, 129, 230],            # Cyber Emerald
-    'Subsurface Utility': [244, 63, 94, 240],  # Rose / Magma Red
+    'Commercial': [19, 94, 150, 225],          # Deep Government Blue
+    'Apartment': [22, 101, 52, 225],           # Cadastral Forest Green
+    'Underground Parking': [71, 85, 105, 230], # Subterranean Slate
+    'Transit': [217, 119, 6, 230],             # Saffron / Transit Amber
+    'Subsurface Utility': [185, 28, 28, 230],  # Utility Crimson Red
 }
 
 import json
@@ -55,11 +55,11 @@ _SATELLITE_URI = "data:application/json;base64," + base64.b64encode(json.dumps(_
 _HYBRID_URI = "data:application/json;base64," + base64.b64encode(json.dumps(_HYBRID_SATELLITE_SPEC).encode()).decode()
 
 MAP_STYLES = {
+    "☀️ Minimalist Light (Gov Standard)": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+    "🧭 Voyager Detailed": "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
     "🛰️ Satellite View (High-Res)": _SATELLITE_URI,
     "🛰️ Hybrid Satellite (Labels & Roads)": _HYBRID_URI,
-    "🌌 Dark Matter (Default)": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-    "☀️ Minimalist Light": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-    "🧭 Voyager Detailed": "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+    "🌌 Dark Matter": "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
 }
 
 CITY_VIEWPORTS = {
@@ -76,11 +76,11 @@ CITY_VIEWPORTS = {
     "Kolkata (KMC - New Town IT Hub & Underwater Metro)": {"lat": 22.5830, "lon": 88.4000, "zoom": 13.2, "pitch": 58, "bearing": 20, "radius": 130, "scale": 1},
 }
 
-def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark Matter (Default)", selected_property_id=None):
+def render_3d_map(df, selected_region=None, custom_center=None, map_theme="☀️ Minimalist Light (Gov Standard)", selected_property_id=None):
     """
-    Renders an interactive, futuristic 3D Cadastral Deck.gl map.
+    Renders an official 3D Cadastral Deck.gl map following Indian e-Governance cartographic guidelines.
     Supports pan-India continent scale down to micro-parcel vertical footprints.
-    Highlights the selected parcel with vibrant cyan and ground beacon halo.
+    Highlights the selected parcel with deep government navy and saffron boundary beacon.
     """
     if df.empty:
         # Fallback empty view centered on India
@@ -89,14 +89,14 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
 
     map_df = df.copy()
 
-    # Determine colors - highlight selected parcel in bright cyber cyan
+    # Determine colors - highlight selected parcel in deep government blue
     if selected_property_id is not None:
         map_df['color'] = map_df.apply(
-            lambda r: [0, 242, 254, 255] if r['property_id'] == selected_property_id else COLOR_PALETTE.get(r['type'], [148, 163, 184, 220]),
+            lambda r: [11, 60, 93, 255] if r['property_id'] == selected_property_id else COLOR_PALETTE.get(r['type'], [100, 116, 139, 220]),
             axis=1
         )
     else:
-        map_df['color'] = map_df['type'].apply(lambda x: COLOR_PALETTE.get(x, [148, 163, 184, 220]))
+        map_df['color'] = map_df['type'].apply(lambda x: COLOR_PALETTE.get(x, [100, 116, 139, 220]))
     
     # Tooltip label formatting
     map_df['elevation_label'] = map_df.apply(
@@ -106,8 +106,8 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
         axis=1
     )
     map_df['archetype_display'] = map_df['archetype'].apply(
-        lambda a: str(a).replace('_', ' ').title() if pd.notna(a) and str(a) != 'None' else 'Parametric Modern'
-    ) if 'archetype' in map_df.columns else 'Parametric Modern'
+        lambda a: str(a).replace('_', ' ').title() if pd.notna(a) and str(a) != 'None' else 'Cadastral Standard'
+    ) if 'archetype' in map_df.columns else 'Cadastral Standard'
 
     # Determine camera view state & scale
     pan_india_default = CITY_VIEWPORTS.get("🇮🇳 Pan-India (National Cadastre)") or CITY_VIEWPORTS.get("🇮🇳 Pan-India (Subcontinent)") or list(CITY_VIEWPORTS.values())[0]
@@ -171,16 +171,16 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
         data=map_df,
         get_position='[lon, lat]',
         get_radius=radius * 1.35,
-        get_fill_color=[255, 255, 255, 40],
+        get_fill_color=[240, 244, 248, 50],
         get_line_color='color',
-        line_width_min_pixels=2,
+        line_width_min_pixels=1.5,
         stroked=True,
         filled=True,
         pickable=False
     )
     layers.append(scatter_layer)
 
-    # 3. Dedicated Glowing Beacon Ring for Selected Property
+    # 3. Dedicated Official Saffron Beacon Ring for Selected Property
     if selected_property_id is not None:
         sel_subset = map_df[map_df['property_id'] == selected_property_id]
         if not sel_subset.empty:
@@ -190,9 +190,9 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
                 data=sel_subset,
                 get_position='[lon, lat]',
                 get_radius=radius * 2.2,
-                get_fill_color=[0, 242, 254, 70],
-                get_line_color=[0, 242, 254, 255],
-                line_width_min_pixels=3,
+                get_fill_color=[224, 109, 16, 40],
+                get_line_color=[224, 109, 16, 240],
+                line_width_min_pixels=2.5,
                 stroked=True,
                 filled=True,
                 pickable=False
@@ -221,26 +221,27 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
             )
             layers.append(label_tile_layer)
 
-    # Informative & Minimalist Glassmorphism Tooltip
+    # Clean Administrative Official Tooltip
     tooltip_html = """
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 200px; padding: 4px 6px;">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 600; margin-bottom: 2px;">
-            {city}, {state} &bull; ID: #{property_id}
+    <div style="font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 220px; padding: 4px 6px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; margin-bottom: 2px;">
+            {city}, {state} &bull; Parcel ID: #{property_id}
         </div>
-        <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
+        <div style="font-size: 14px; font-weight: 700; color: #0b3c5d; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
             {name}
         </div>
-        <div style="font-size: 11px; margin-bottom: 3px; color: #cbd5e1;">
-            <span style="color: #64748b;">Type:</span> <b>{type}</b> &bull; <span style="color: #38bdf8;">{archetype_display}</span>
+        <div style="font-size: 12px; margin-bottom: 3px; color: #334155;">
+            <span style="color: #64748b;">Classification:</span> <b>{type}</b>
         </div>
-        <div style="font-size: 11px; margin-bottom: 3px; color: #cbd5e1;">
-            <span style="color: #64748b;">Vertical Span:</span> <b>{total_height}m</b> ({elevation_label})
+        <div style="font-size: 12px; margin-bottom: 3px; color: #334155;">
+            <span style="color: #64748b;">Vertical Height:</span> <b>{total_height}m</b> ({elevation_label})
         </div>
-        <div style="font-size: 11px; margin-bottom: 3px; color: #cbd5e1;">
-            <span style="color: #64748b;">Owner:</span> {owner}
+        <div style="font-size: 12px; margin-bottom: 3px; color: #334155;">
+            <span style="color: #64748b;">Owner / Titleholder:</span> <b>{owner}</b>
         </div>
-        <div style="font-size: 11px; margin-top: 5px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); color: #38bdf8;">
-            <b>₹{valuation_cr} Cr</b> &bull; <span style="color: #10b981;">{status}</span>
+        <div style="font-size: 12px; margin-top: 6px; padding-top: 4px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #0b3c5d; font-weight: 700;">₹{valuation_cr} Cr</span>
+            <span style="color: #138808; font-weight: 600; font-size: 11px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1px 6px; border-radius: 3px;">{status}</span>
         </div>
     </div>
     """
@@ -253,7 +254,7 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
                 map_style_url = v
                 break
     if not map_style_url:
-        map_style_url = MAP_STYLES["🌌 Dark Matter (Default)"]
+        map_style_url = MAP_STYLES["☀️ Minimalist Light (Gov Standard)"]
 
     return pdk.Deck(
         layers=layers,
@@ -261,13 +262,12 @@ def render_3d_map(df, selected_region=None, custom_center=None, map_theme="Dark 
         tooltip={
             "html": tooltip_html,
             "style": {
-                "backgroundColor": "rgba(15, 23, 42, 0.94)",
-                "backdropFilter": "blur(8px)",
-                "color": "#ffffff",
-                "border": "1px solid rgba(255, 255, 255, 0.12)",
-                "borderRadius": "10px",
-                "boxShadow": "0 12px 30px rgba(0, 0, 0, 0.5)",
-                "padding": "10px 14px"
+                "backgroundColor": "#ffffff",
+                "color": "#0f172a",
+                "border": "1px solid #cbd5e1",
+                "borderRadius": "4px",
+                "boxShadow": "0 2px 6px rgba(0, 0, 0, 0.12)",
+                "padding": "10px 12px"
             }
         },
         map_style=map_style_url,

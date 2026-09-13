@@ -69,160 +69,240 @@ def render_3d_digital_twin_component(
       <script src="https://cdn.tailwindcss.com"></script>
       <!-- Lucide Icons -->
       <script src="https://unpkg.com/lucide@latest"></script>
-      <!-- Three.js & OrbitControls -->
+      <!-- Three.js, OrbitControls, Loaders & Exporters -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
       <!-- Chart.js for LiDAR Histogram -->
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
       <style>
         :root {{
-          --primary: #2563eb;
-          --primary-hover: #1d4ed8;
-          --dark-bg: #0b1120;
-          --card-bg: rgba(15, 23, 42, 0.85);
-          --border-color: rgba(255, 255, 255, 0.12);
+          --primary: #0B3C5D;
+          --primary-hover: #082C44;
+          --dark-bg: #0A1120;
+          --card-bg: #FFFFFF;
+          --border-color: rgba(255, 255, 255, 0.6);
         }}
-        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
-        body {{ background: var(--dark-bg); color: #f8fafc; overflow: hidden; height: 100vh; width: 100vw; display: flex; flex-direction: column; }}
+        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
+        body {{ 
+          background: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.10) 0px, transparent 50%), #0A1120; 
+          color: #0F172A; 
+          overflow: hidden; 
+          height: 100vh; 
+          width: 100vw; 
+          display: flex; 
+          flex-direction: column; 
+        }}
         
+        /* Universal Glassmorphic Base */
         .glass {{
-          background: var(--card-bg);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid var(--border-color);
+          background: rgba(255, 255, 255, 0.78);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border: 1.5px solid rgba(255, 255, 255, 0.85);
+          box-shadow: 0 12px 36px rgba(11, 60, 93, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+          border-radius: 14px;
         }}
 
-        /* Top App Header */
+        /* Top App Header (Frosted Glass) */
         header {{
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 6px 14px;
+          padding: 6px 18px;
           height: 46px;
-          background: rgba(11, 17, 32, 0.96);
-          border-bottom: 1px solid var(--border-color);
+          background: rgba(255, 255, 255, 0.82);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border-bottom: 1.5px solid rgba(255, 255, 255, 0.75);
+          box-shadow: 0 4px 20px rgba(11, 60, 93, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.95);
           z-index: 50;
-          gap: 8px;
+          gap: 10px;
           overflow: hidden;
           white-space: nowrap;
         }}
         .emblem-badge {{
-          background: linear-gradient(135deg, #f59e0b 0%, #10b981 100%);
-          color: #0f172a;
-          font-weight: 800;
+          background: linear-gradient(135deg, #0B3C5D 0%, #0369A1 100%);
+          color: #FFFFFF;
+          font-weight: 700;
           font-size: 11px;
-          padding: 4px 7px;
+          padding: 4px 10px;
           border-radius: 6px;
           letter-spacing: 0.5px;
           flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(11, 60, 93, 0.25);
         }}
         .nav-tabs {{
           display: flex;
-          gap: 4px;
-          background: rgba(15, 23, 42, 0.7);
+          gap: 3px;
+          background: rgba(241, 245, 249, 0.7);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           padding: 3px;
           border-radius: 8px;
-          border: 1px solid var(--border-color);
+          border: 1px solid rgba(203, 213, 225, 0.8);
           flex-shrink: 1;
         }}
         .tab-btn {{
           background: transparent;
           border: none;
-          color: #94a3b8;
-          padding: 4px 10px;
-          border-radius: 5px;
+          color: #475569;
+          padding: 5px 12px;
+          border-radius: 6px;
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 5px;
           white-space: nowrap;
         }}
-        .tab-btn:hover {{ color: #ffffff; background: rgba(255, 255, 255, 0.05); }}
-        .tab-btn.active {{ background: var(--primary); color: #ffffff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4); }}
+        .tab-btn:hover {{ color: #0B3C5D; background: rgba(255, 255, 255, 0.8); }}
+        .tab-btn.active {{ 
+          background: #0B3C5D; 
+          color: #FFFFFF; 
+          box-shadow: 0 2px 8px rgba(11, 60, 93, 0.3);
+        }}
         
         .badge-cors {{
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
           font-size: 10px;
-          background: rgba(16, 185, 129, 0.15);
-          color: #10b981;
-          padding: 3px 8px;
-          border-radius: 16px;
-          border: 1px solid rgba(16, 185, 129, 0.3);
+          background: rgba(240, 253, 244, 0.8);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          color: #138808;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid rgba(187, 247, 208, 0.85);
+          box-shadow: 0 2px 6px rgba(19, 136, 8, 0.1);
           flex-shrink: 0;
         }}
         .pulse-dot {{
-          width: 6px;
-          height: 6px;
-          background-color: #10b981;
+          width: 7px;
+          height: 7px;
+          background-color: #138808;
           border-radius: 50%;
-          box-shadow: 0 0 6px #10b981;
-          animation: pulse 1.8s infinite;
-        }}
-        @keyframes pulse {{
-          0% {{ transform: scale(0.95); opacity: 0.8; }}
-          50% {{ transform: scale(1.3); opacity: 1; }}
-          100% {{ transform: scale(0.95); opacity: 0.8; }}
+          box-shadow: 0 0 8px #138808;
         }}
 
         /* Workspace */
         .workspace {{ display: flex; flex: 1; position: relative; overflow: hidden; }}
         #webgl-container {{ flex: 1; width: 100%; height: 100%; position: relative; outline: none; }}
 
-        /* Floating Left Sidebar */
+        /* Floating Dedicated Government Bottom Toolbar (Glassmorphic Pill) */
+        .gov-bottom-toolbar {{
+          position: absolute;
+          bottom: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 35;
+          display: flex;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.80);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          padding: 8px 18px;
+          border-radius: 9999px;
+          border: 1.5px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 14px 40px rgba(11, 60, 93, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+        }}
+        .gov-tb-btn {{
+          background: rgba(241, 245, 249, 0.8);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(203, 213, 225, 0.85);
+          color: #0B3C5D;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 9999px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }}
+        .gov-tb-btn:hover {{
+          background: #0B3C5D;
+          color: #FFFFFF;
+          border-color: #0B3C5D;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(11, 60, 93, 0.35);
+        }}
+        .gov-tb-btn.active {{
+          background: #0B3C5D;
+          color: #FFFFFF;
+          border-color: #07253B;
+          box-shadow: 0 3px 10px rgba(11, 60, 93, 0.4);
+        }}
+
+        /* Floating Left Sidebar (Glassmorphic) */
         .left-controls {{
           position: absolute;
           top: 10px;
           left: 10px;
-          width: 240px;
+          width: 255px;
           max-height: calc(100vh - 68px);
           overflow-y: auto;
-          border-radius: 10px;
-          padding: 12px;
+          border-radius: 16px;
+          padding: 14px;
           z-index: 20;
           display: flex;
           flex-direction: column;
           gap: 10px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+          background: rgba(255, 255, 255, 0.84);
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          color: #0F172A;
+          border: 1.5px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 16px 48px rgba(11, 60, 93, 0.16), inset 0 1px 2px rgba(255, 255, 255, 0.95);
           transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
         }}
         .left-controls::-webkit-scrollbar {{ width: 3px; }}
-        .left-controls::-webkit-scrollbar-thumb {{ background: rgba(255, 255, 255, 0.2); border-radius: 3px; }}
+        .left-controls::-webkit-scrollbar-thumb {{ background: #CBD5E1; border-radius: 3px; }}
         .left-controls.collapsed {{
           transform: translateX(-115%);
           opacity: 0;
           pointer-events: none;
         }}
 
-        /* Floating Button to re-open Controls when collapsed */
+        /* Floating Button to re-open Controls */
         .btn-toggle-left {{
           position: absolute;
           top: 10px;
           left: 10px;
           z-index: 22;
-          background: rgba(15, 23, 42, 0.88);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(56, 189, 248, 0.4);
-          color: #38bdf8;
-          padding: 5px 10px;
-          border-radius: 8px;
+          background: rgba(11, 60, 93, 0.9);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1.5px solid rgba(255, 255, 255, 0.35);
+          color: #FFFFFF;
+          padding: 7px 14px;
+          border-radius: 9999px;
           font-size: 11px;
           font-weight: 700;
           cursor: pointer;
-          display: none;
+          display: flex;
           align-items: center;
-          gap: 5px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-          transition: all 0.2s;
+          gap: 6px;
+          box-shadow: 0 4px 16px rgba(11, 60, 93, 0.35);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         .btn-toggle-left:hover {{
-          background: #0284c7;
-          color: #ffffff;
+          background: #07253B;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(7, 37, 59, 0.45);
         }}
         .btn-toggle-left.visible {{
           display: flex;
@@ -232,8 +312,8 @@ def render_3d_digital_twin_component(
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.6px;
-          color: #94a3b8;
+          letter-spacing: 0.5px;
+          color: #64748B;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -244,16 +324,18 @@ def render_3d_digital_twin_component(
           width: 100%;
           height: 6px;
           border-radius: 4px;
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(203, 213, 225, 0.6);
           outline: none;
         }}
         input[type="range"]::-webkit-slider-thumb {{
           -webkit-appearance: none;
-          width: 15px;
-          height: 15px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
           background: var(--primary);
+          border: 2px solid #FFFFFF;
           cursor: pointer;
+          box-shadow: 0 2px 6px rgba(11, 60, 93, 0.4);
         }}
 
         .camera-grid {{
@@ -262,46 +344,64 @@ def render_3d_digital_twin_component(
           gap: 6px;
         }}
         .camera-btn {{
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--border-color);
-          color: #f8fafc;
+          background: rgba(241, 245, 249, 0.7);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(203, 213, 225, 0.8);
+          color: #0F172A;
           padding: 6px 8px;
-          border-radius: 6px;
+          border-radius: 8px;
           font-size: 11px;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
           text-align: center;
         }}
-        .camera-btn:hover {{ background: rgba(255, 255, 255, 0.15); border-color: #38bdf8; }}
+        .camera-btn:hover {{ 
+          background: #0B3C5D; 
+          border-color: #0B3C5D; 
+          color: #FFFFFF; 
+          box-shadow: 0 2px 8px rgba(11, 60, 93, 0.25);
+        }}
 
         .strata-item {{
           display: flex;
           align-items: center;
           justify-content: space-between;
           font-size: 12px;
-          padding: 5px 6px;
-          border-radius: 6px;
-          background: rgba(255, 255, 255, 0.03);
+          padding: 6px 8px;
+          border-radius: 8px;
+          background: rgba(248, 250, 252, 0.65);
+          border: 1px solid rgba(226, 232, 240, 0.7);
           cursor: pointer;
+          transition: all 0.15s;
         }}
-        .strata-item:hover {{ background: rgba(255, 255, 255, 0.08); }}
+        .strata-item:hover {{ 
+          background: rgba(255, 255, 255, 0.9); 
+          border-color: #38bdf8; 
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }}
 
-        /* Floating Right Inspection Card */
+        /* Floating Right Inspection Card (Frosted Dark Glass) */
         .right-drawer {{
           position: absolute;
           top: 10px;
           right: 10px;
-          width: 260px;
+          width: 265px;
           max-height: calc(100vh - 68px);
           overflow-y: auto;
-          border-radius: 10px;
-          padding: 12px;
+          border-radius: 16px;
+          padding: 14px;
           z-index: 25;
-          display: none; /* Hidden by default so 3D model is completely unobstructed */
+          display: none;
           flex-direction: column;
           gap: 10px;
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
-          animation: slideInRight 0.2s ease-out;
+          background: rgba(15, 23, 42, 0.84);
+          backdrop-filter: blur(24px) saturate(190%);
+          -webkit-backdrop-filter: blur(24px) saturate(190%);
+          border: 1.5px solid rgba(56, 189, 248, 0.35);
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+          animation: slideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         .right-drawer::-webkit-scrollbar {{ width: 3px; }}
         .right-drawer::-webkit-scrollbar-thumb {{ background: rgba(255, 255, 255, 0.2); border-radius: 3px; }}
@@ -311,20 +411,24 @@ def render_3d_digital_twin_component(
         }}
 
         .ulpin-box {{
-          background: rgba(15, 23, 42, 0.7);
-          border: 1px solid rgba(59, 130, 246, 0.4);
-          border-radius: 8px;
+          background: rgba(30, 41, 59, 0.72);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(56, 189, 248, 0.4);
+          border-radius: 10px;
           padding: 10px;
           display: flex;
           flex-direction: column;
           gap: 4px;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
         }}
         .ulpin-code {{
           font-family: monospace;
           font-weight: 700;
           font-size: 12px;
-          color: #60a5fa;
+          color: #38bdf8;
           word-break: break-all;
+          text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
         }}
 
         .metrics-grid {{
@@ -334,36 +438,47 @@ def render_3d_digital_twin_component(
           font-size: 11px;
         }}
         .metric-tile {{
-          background: rgba(255, 255, 255, 0.04);
-          padding: 6px;
-          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 7px;
+          border-radius: 8px;
         }}
         .metric-tile .lbl {{ font-size: 9px; color: #94a3b8; text-transform: uppercase; }}
         .metric-tile .val {{ font-size: 12px; font-weight: 700; color: #f8fafc; }}
 
         .btn-primary {{
-          background: var(--primary);
+          background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
           color: #ffffff;
-          border: none;
-          padding: 8px 12px;
-          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          padding: 9px 14px;
+          border-radius: 10px;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
+          box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }}
-        .btn-primary:hover {{ background: var(--primary-hover); }}
+        .btn-primary:hover {{ 
+          background: linear-gradient(135deg, #0369A1 0%, #0284C7 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5);
+        }}
 
-        /* Modal */
+        /* Modal (Frosted Glassmorphism) */
         .modal-overlay {{
           position: fixed;
           top: 0; left: 0; width: 100vw; height: 100vh;
-          background: rgba(0,0,0,0.75);
-          backdrop-filter: blur(8px);
+          background: rgba(7, 11, 20, 0.74);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
           display: none;
           align-items: center;
           justify-content: center;
@@ -371,15 +486,18 @@ def render_3d_digital_twin_component(
         }}
         .modal-overlay.open {{ display: flex; }}
         .cert-sheet {{
-          background: #ffffff;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(26px);
+          -webkit-backdrop-filter: blur(26px);
           color: #1e293b;
-          border: 10px double #0284c7;
-          border-radius: 12px;
-          padding: 24px;
+          border: 3.5px solid rgba(2, 132, 199, 0.6);
+          border-radius: 20px;
+          padding: 28px;
           max-width: 750px;
           width: 90%;
           max-height: 85vh;
           overflow-y: auto;
+          box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.95);
         }}
       </style>
     </head>
@@ -387,13 +505,13 @@ def render_3d_digital_twin_component(
       <!-- Header -->
       <header>
         <div class="flex items-center gap-2 min-w-0">
-          <div class="emblem-badge">IN 3D-ULPIN</div>
+          <div class="emblem-badge">GOI 3D CADASTRE</div>
           <div class="truncate">
             <div class="flex items-center gap-1.5">
-              <h1 class="font-bold text-xs tracking-tight text-white truncate max-w-[150px]" title="{property_name}">{property_name}</h1>
-              <span class="text-[9px] text-amber-400 font-mono font-bold hidden sm:inline">[{building_type} &bull; {archetype_title}]</span>
+              <h1 class="font-bold text-xs tracking-tight text-slate-800 truncate max-w-[200px]" title="{property_name}">{property_name}</h1>
+              <span class="text-[10px] text-amber-600 font-mono font-bold hidden sm:inline">[{building_type}]</span>
             </div>
-            <p class="text-[9px] text-slate-400 truncate hidden md:block">{city} • {zone} &bull; {elev_str}</p>
+            <p class="text-[10px] text-slate-500 truncate hidden md:block">{city} &bull; {zone} &bull; {elev_str}</p>
           </div>
         </div>
 
@@ -417,7 +535,7 @@ def render_3d_digital_twin_component(
         <div class="flex items-center gap-2">
           <div class="badge-cors" title="rtcm.surveyofindia.gov.in:2101">
             <div class="pulse-dot"></div>
-            <span class="font-mono text-[9px] font-bold">RTK ACTIVE</span>
+            <span class="font-mono text-[9px] font-bold">CORS RTK ACTIVE</span>
           </div>
         </div>
       </header>
@@ -426,20 +544,20 @@ def render_3d_digital_twin_component(
       <div class="workspace">
         
         <!-- Toggle button to restore left sidebar when collapsed -->
-        <button id="btn-show-controls" class="btn-toggle-left" onclick="toggleLeftControls()" title="Open Controls Menu">
+        <button id="btn-show-controls" class="btn-toggle-left visible" onclick="toggleLeftControls()" title="Open Controls Menu">
           <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-          <span>Controls</span>
+          <span>Layers & Sliders</span>
         </button>
 
-        <!-- Left Sidebar Controls -->
-        <aside class="left-controls glass" id="left-sidebar">
+        <!-- Left Sidebar Controls (Collapsed by default for visual priority on 3D twin) -->
+        <aside class="left-controls glass collapsed" id="left-sidebar">
           
           <!-- Top bar with Collapse button -->
-          <div class="flex items-center justify-between pb-1 border-b border-white/10">
-            <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
               <i data-lucide="sliders" class="w-3 h-3"></i> Controls Panel
             </span>
-            <button onclick="toggleLeftControls()" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 text-[10px] flex items-center gap-1 border border-white/10" title="Collapse Menu to clear 3D view">
+            <button onclick="toggleLeftControls()" class="text-slate-600 hover:text-slate-900 px-1.5 py-0.5 rounded hover:bg-slate-100 text-[10px] flex items-center gap-1 border border-slate-300" title="Collapse Menu to clear 3D view">
               <span>Hide</span>
               <i data-lucide="chevron-left" class="w-3 h-3"></i>
             </button>
@@ -661,6 +779,22 @@ def render_3d_digital_twin_component(
           </button>
         </aside>
 
+        <!-- Compact Dedicated Government Bottom Toolbar -->
+        <div class="gov-bottom-toolbar" id="gov-toolbar">
+          <button onclick="setCam('top')" class="gov-tb-btn" title="2D Top Orthographic">📐 Top View</button>
+          <button onclick="setCam('front')" class="gov-tb-btn" title="Front Elevation View">🏛️ Front View</button>
+          <button onclick="setCam('iso')" class="gov-tb-btn" title="3D Isometric Perspective">🌐 3D Isometric</button>
+          <button onclick="toggleExplodedCompact()" class="gov-tb-btn" id="btn-tb-explode" title="Toggle Exploded Storeys">💥 Exploded</button>
+          <button onclick="toggleXrayMode()" class="gov-tb-btn" id="btn-tb-xray" title="Toggle Subsurface X-Ray">🚇 Subsurface X-Ray</button>
+          <button onclick="exportModelGLB()" class="gov-tb-btn" title="Export current 3D Digital Twin as standard .GLB 3D model file">📦 Export .GLB</button>
+          <label class="gov-tb-btn" style="cursor: pointer;" title="Import external 3D Model (.glb, .gltf, .obj)">
+            📂 Import 3D
+            <input type="file" id="inp-custom-model" accept=".glb,.gltf,.obj" style="display:none" onchange="loadCustom3DModel(event)">
+          </label>
+          <button onclick="resetCamGov()" class="gov-tb-btn" title="Reset Camera">🔄 Reset</button>
+          <button onclick="toggleLeftControls()" class="gov-tb-btn" style="border-left: 1px solid #CBD5E1; margin-left: 4px;" title="Strata Layers & Sliders">⚙️ Layers</button>
+        </div>
+
       </div>
 
       <!-- 3D ULPIN Generator Deed Modal -->
@@ -716,8 +850,8 @@ def render_3d_digital_twin_component(
           const h = container.clientHeight;
 
           scene = new THREE.Scene();
-          scene.background = new THREE.Color(0x0b1120);
-          scene.fog = new THREE.FogExp2(0x0b1120, 0.0032);
+          scene.background = new THREE.Color(0xedf2f7);
+          scene.fog = new THREE.FogExp2(0xedf2f7, 0.002);
 
           camera = new THREE.PerspectiveCamera(45, w / h, 0.5, 2500);
           camera.up.set(0, 0, 1);
@@ -813,8 +947,8 @@ def render_3d_digital_twin_component(
           grid.material.transparent = true;
           scene.add(grid);
 
-          // Surrounding Urban Context Blocks
-          addSurroundingUrbanContext();
+          // Surrounding Urban Context Blocks (Disabled for clear 360-degree model viewing)
+          // addSurroundingUrbanContext();
 
           // Axes
           const axes = new THREE.AxesHelper(15);
@@ -1052,214 +1186,368 @@ def render_3d_digital_twin_component(
           }});
         }}
 
-        // ARCHETYPE 2: Worli Sea-Facing Super-Tower (Mumbai) - Pei Cobb Freed 3-Winged Cloverleaf 280m Skyscraper
+        // ARCHETYPE 2: Worli Sea-Facing Super-Tower (Mumbai) - Lodha World One (Pei Cobb Freed 3-Winged Cloverleaf)
         function buildSupertallTiered(data) {{
-          // Authentic Pei Cobb Freed & Partners Curvilinear Cloverleaf Architecture:
-          // 3 curved petal wings radiating outward at 0°, 120°, and 240° around a central core
+          // Real-World Pei Cobb Freed & Partners (PCF&P) "The World Towers" Architecture:
+          // A soaring, aerodynamic 3-petal cloverleaf/trefoil supertall tower (280.2m MSL)
+          // wrapped in signature continuous gleaming white horizontal ribbon balconies on EVERY floor,
+          // with sculpted cascading setbacks, sovereign sky penthouse with ocean infinity pool,
+          // glowing crystalline crown, grand arrival fountain roundabout, and companion curved towers!
 
-          // Tier 1: Grand Port Cochère & Club W Lifestyle Podium (0 to 12m)
-          createPrism("BLD_PODIUM", [[5,5],[35,5],[35,35],[5,35]], 0, 12, 0xd97706, 0.88, "BLD", 1, {{
-            name: "Triple-Height Concierge Port Cochère & Club W Lifestyle Podium",
+          // Helper: Generates smooth 48-point 3-petal cloverleaf polygon
+          function getCloverleafPolygon(cx, cy, R, lobePurity = 0.38) {{
+            const pts = [];
+            for (let i = 0; i < 48; i++) {{
+              const theta = (Math.PI * 2 * i) / 48;
+              const r = R * (1 + lobePurity * Math.cos(3 * (theta - Math.PI / 2)));
+              pts.push([
+                Math.round((cx + r * Math.cos(theta)) * 100) / 100,
+                Math.round((cy + r * Math.sin(theta)) * 100) / 100
+              ]);
+            }}
+            return pts;
+          }}
+
+          // Helper: Creates smooth 3D curved white wrap-around balcony ribbon
+          const whiteBalconyMat = new THREE.MeshStandardMaterial({{
+            color: 0xf8fafc,
+            metalness: 0.85,
+            roughness: 0.25
+          }});
+
+          function createBalconyRibbon(cx, cy, R, zHeight) {{
+            const pts2D = getCloverleafPolygon(cx, cy, R * 1.02);
+            const pts3D = pts2D.map(p => new THREE.Vector3(p[0], p[1], zHeight));
+            const curve = new THREE.CatmullRomCurve3(pts3D, true);
+            const tubeGeo = new THREE.TubeGeometry(curve, 48, 0.28, 8, true);
+            const tubeMesh = new THREE.Mesh(tubeGeo, whiteBalconyMat);
+            groups.BLD.add(tubeMesh);
+
+            // Subtle floor slab underside trim
+            const trimGeo = new THREE.TubeGeometry(curve, 48, 0.12, 6, true);
+            const trimMesh = new THREE.Mesh(trimGeo, new THREE.MeshBasicMaterial({{ color: 0xe2e8f0 }}));
+            trimMesh.position.z = -0.15;
+            groups.BLD.add(trimMesh);
+          }}
+
+          // 1. Grand Landscaped Arrival Plaza & Water Fountain (Z = 0.0 to 1.5m)
+          const plazaGeo = new THREE.BoxGeometry(40, 40, 0.2);
+          const plazaMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.85 }});
+          const plaza = new THREE.Mesh(plazaGeo, plazaMat);
+          plaza.position.set(20, 20, 0.1);
+          groups.SUR.add(plaza);
+
+          // Central Circular Stepped Water Fountain
+          const fPoolGeo = new THREE.CylinderGeometry(5.2, 5.2, 0.4, 32);
+          fPoolGeo.rotateX(Math.PI / 2);
+          const fPoolMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.08, transparent: true, opacity: 0.85 }});
+          const fPool = new THREE.Mesh(fPoolGeo, fPoolMat);
+          fPool.position.set(20, 5.5, 0.3);
+          groups.SUR.add(fPool);
+
+          const fRimGeo = new THREE.RingGeometry(4.8, 5.4, 32);
+          const fRim = new THREE.Mesh(fRimGeo, new THREE.MeshStandardMaterial({{ color: 0x94a3b8, roughness: 0.8 }}));
+          fRim.position.set(20, 5.5, 0.52);
+          groups.SUR.add(fRim);
+
+          // Fountain Central Spray Jet
+          const fJetGeo = new THREE.CylinderGeometry(0.8, 1.8, 1.2, 16);
+          fJetGeo.rotateX(Math.PI / 2);
+          const fJet = new THREE.Mesh(fJetGeo, new THREE.MeshBasicMaterial({{ color: 0xe0f2fe }}));
+          fJet.position.set(20, 5.5, 0.9);
+          groups.SUR.add(fJet);
+
+          // Ring of Royal Palm Trees around arrival roundabout
+          for (let pi = 0; pi < 8; pi++) {{
+            const pAngle = (Math.PI * 2 * pi) / 8;
+            const px = 20 + 8.5 * Math.cos(pAngle);
+            const py = 5.5 + 8.5 * Math.sin(pAngle);
+            if (py > 0 && py < 12) {{
+              const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 3.8, 8), new THREE.MeshStandardMaterial({{ color: 0x78350f }}));
+              trunk.rotateX(Math.PI / 2);
+              trunk.position.set(px, py, 1.9);
+              groups.SUR.add(trunk);
+
+              const fronds = new THREE.Mesh(new THREE.SphereGeometry(1.2, 8, 8), new THREE.MeshStandardMaterial({{ color: 0x15803d }}));
+              fronds.position.set(px, py, 4.0);
+              groups.SUR.add(fronds);
+            }}
+          }}
+
+          // 3D Entrance Totem Monolith
+          const totem = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 3.2), new THREE.MeshStandardMaterial({{ color: 0x0f172a, metalness: 0.8 }}));
+          totem.position.set(11, 2.5, 1.6);
+          groups.SUR.add(totem);
+
+          // 2. Triple-Height Concierge Port Cochère & Lifestyle Podium (Floors G00 - L02, Z = 0.0m to 10.0m)
+          const polyG00 = getCloverleafPolygon(20, 20, 15.5);
+          createPrism("BLD_PODIUM_G00", polyG00, 0, 10.0, 0x0284c7, 0.88, "BLD", 1, {{
+            name: "World One Triple-Height Concierge Grand Port Cochère & Club W Podium",
             ulpin: `${{data.base_ulpin}}-BLD-P01-GR01-7`,
-            z: "0.0m to +12.0m",
-            area: "900 m²",
+            z: "0.0m to +10.0m",
+            area: "1080 m²",
             vol: "10800 m³",
             owner: "World One Grand Concierge & Reception Trust",
-            val: "₹ 420 Cr"
+            val: "₹ 520 Cr"
           }});
+          createBalconyRibbon(20, 20, 15.5, 5.0);
+          createBalconyRibbon(20, 20, 15.5, 9.8);
 
-          // Unique Authentic HNI Resident Registry by Wing and Floor
-          const residentRegistry = {{
-            3: [
-              "Sh. Vikramaditya & Shweta Singhania",
-              "Dr. Radhika & Amitav Oberoi",
-              "Smt. Ananya & Rohit Narang"
-            ],
-            4: [
-              "Capt. Devendra K. Bakshi (Retd. Naval Commander)",
-              "Sh. Rajeshwar & Meenakshi Sundaram",
-              "Dr. Rohan & Nandini Mehta"
-            ],
-            5: [
-              "Smt. Sunita & Siddharth Agarwal",
-              "Sh. Harishchandra V. Rao",
-              "Smt. Priya & Sanjay Nambiar"
-            ]
-          }};
+          // Sweeping Aerodynamic Glass Canopy over Driveway
+          const canopyGeo = new THREE.CylinderGeometry(9.0, 9.0, 0.35, 24, 1, false, 0, Math.PI);
+          canopyGeo.rotateX(Math.PI / 2);
+          const canopyMat = new THREE.MeshStandardMaterial({{ color: 0x38bdf8, roughness: 0.1, transparent: true, opacity: 0.85 }});
+          const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+          canopy.position.set(20, 7.5, 5.8);
+          groups.BLD.add(canopy);
 
-          // Tier 2: Mid-Rise 3-Winged Cloverleaf Petals (12 to 26m)
-          for (let f = 3; f <= 5; f++) {{
-            const zMin = 12 + (f - 3) * 4.6;
-            const zMax = zMin + 4.6;
-            const lvl = `L0${{f}}`;
-            const wingOwners = residentRegistry[f] || residentRegistry[3];
-
-            // Central Core
-            createCylinderPrism(`BLD_CORE_${{lvl}}`, 6.0, 6.0, zMin, zMax, 24, 0x0284c7, 0.7, "COM", f, {{
-              name: `World One Elevator Core & Service Spine (${{lvl}})`,
-              ulpin: `${{data.base_ulpin}}-COM-${{lvl}}-CR01-1`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "113 m²",
-              vol: "520 m³",
-              owner: "World One Common Strata Facilities Association",
-              val: "₹ 15.0 Cr"
-            }});
-
-            // Wing 1 (North - Arabian Sea Panorama)
-            createPrism(`BLD_W1_${{lvl}}`, [[15, 20], [25, 20], [24, 36], [16, 36]], zMin, zMax, 0x0284c7, 0.85, "BLD", f, {{
-              name: `Signature Arabian Sea-Facing Luxury Residence ${{lvl}}01`,
-              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-W101-A`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "135 m²",
-              vol: "621 m³",
-              owner: wingOwners[0],
-              val: "₹ 48.0 Cr"
-            }});
-
-            // Wing 2 (South-East - Worli Sea Face)
-            createPrism(`BLD_W2_${{lvl}}`, [[20, 15], [20, 25], [34, 17], [30, 9]], zMin, zMax, 0x0369a1, 0.85, "BLD", f, {{
-              name: `Worli Sea Face Luxury Panorama Residence ${{lvl}}02`,
-              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-W201-B`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "130 m²",
-              vol: "598 m³",
-              owner: wingOwners[1],
-              val: "₹ 46.5 Cr"
-            }});
-
-            // Wing 3 (South-West - Bandra Sea Link Overlook)
-            createPrism(`BLD_W3_${{lvl}}`, [[20, 15], [20, 25], [10, 9], [6, 17]], zMin, zMax, 0x0ea5e9, 0.85, "BLD", f, {{
-              name: `Sea Link Sunset Sky Villa ${{lvl}}03`,
-              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-W301-C`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "130 m²",
-              vol: "598 m³",
-              owner: wingOwners[2],
-              val: "₹ 46.5 Cr"
-            }});
-
-            // Curved cantilevered balcony slab bands (Pei Cobb Freed styling)
-            const balconyMat = new THREE.MeshStandardMaterial({{ color: 0xf8fafc, roughness: 0.3, metalness: 0.2 }});
-            const b1 = new THREE.Mesh(new THREE.BoxGeometry(10, 1, 0.35), balconyMat);
-            b1.position.set(20, 36.2, zMin + 0.2);
-            groups.BLD.add(b1);
-            const b2 = new THREE.Mesh(new THREE.BoxGeometry(8, 1, 0.35), balconyMat);
-            b2.rotation.z = Math.PI / 3;
-            b2.position.set(32, 13, zMin + 0.2);
-            groups.BLD.add(b2);
-            const b3 = new THREE.Mesh(new THREE.BoxGeometry(8, 1, 0.35), balconyMat);
-            b3.rotation.z = -Math.PI / 3;
-            b3.position.set(8, 13, zMin + 0.2);
-            groups.BLD.add(b3);
-          }}
-
-          // Tier 3: High-Rise Setback Sky Mansions (26 to 38m)
-          const duplexOwners = [
-            "Sh. K. V. Subramanian (Global Equity Fund Director)",
-            "Smt. Divya & Gautam Chopra (Logistics Pioneers)",
-            "Sh. Jaideep & Vandana Munjal (Industrialist)"
+          // HNI Resident Registry
+          const residentRoster = [
+            "Sh. Vikramaditya & Shweta Singhania (Industrialist Sky Villa)",
+            "Dr. Radhika & Amitav Oberoi (Worli Sea Face Residence)",
+            "Smt. Ananya & Rohit Narang (Arabian Sea Suite)",
+            "Capt. Devendra K. Bakshi (Retd. Naval Commander)",
+            "Sh. Rajeshwar & Meenakshi Sundaram (FinTech Director)",
+            "Dr. Rohan & Nandini Mehta (Bandra Sea Link View)",
+            "Smt. Sunita & Siddharth Agarwal (Luxury Suite)",
+            "Sh. Harishchandra V. Rao (Corporate Chambers)",
+            "Smt. Priya & Sanjay Nambiar (Marine Vista Residence)",
+            "Sh. Jaideep & Vandana Munjal (Panoramic Sky Mansion)",
+            "Sh. K. V. Subramanian (Global Equity Fund Executive)"
           ];
 
-          for (let f = 6; f <= 8; f++) {{
-            const zMin = 26 + (f - 6) * 4.0;
-            const zMax = zMin + 4.0;
+          // 3. Low-Rise 3-Petal Luxury Residences (Floors L03 - L06, Z = 10.0m to 28.4m, R = 14.0m)
+          for (let f = 3; f <= 6; f++) {{
+            const zMin = 10.0 + (f - 3) * 4.6;
+            const zMax = zMin + 4.6;
             const lvl = `L0${{f}}`;
-            createPrism(`BLD_SKY_${{lvl}}`, [[11,11],[29,11],[29,29],[11,29]], zMin, zMax, 0x38bdf8, 0.88, "BLD", f, {{
-              name: `High-Rise Panoramic Sky Duplex Suite (${{lvl}})`,
-              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-SD01-S`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "324 m²",
-              vol: "1296 m³",
-              owner: duplexOwners[f - 6] || `Exclusive Duplex Title Holder (${{lvl}})`,
-              val: "₹ 72.0 Cr"
+            const poly = getCloverleafPolygon(20, 20, 14.0);
+            createPrism(`BLD_${{lvl}}_RESIDENCES`, poly, zMin, zMax, 0x0284c7, 0.88, "BLD", f, {{
+              name: `World One 3-Petal Luxury Residences (${{lvl}})`,
+              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-TR01-A`,
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "860 m²",
+              vol: "3956 m³",
+              owner: residentRoster[f - 3] || `World One Title Holder (${{lvl}})`,
+              val: "₹ 68.0 Cr"
             }});
+            createBalconyRibbon(20, 20, 14.0, zMin + 0.2);
           }}
 
-          // Tier 4: Sovereign Triplex Penthouse & Sky Plunge Pool (38 to 48m)
-          createPrism("BLD_PENTHOUSE", [[14,14],[26,14],[26,26],[14,26]], 38, 48, 0x06b6d4, 0.92, "BLD", 9, {{
-            name: "World One Sovereign Triplex Penthouse with Private Infinity Plunge Pool",
-            ulpin: `${{data.base_ulpin}}-BLD-L16-PH01-P`,
-            z: "+38.0m to +48.0m",
-            area: "144 m²",
-            vol: "1440 m³",
-            owner: "Sovereign Sky Palace Family Trust (Chairman Suite)",
-            val: "₹ 165 Cr"
-          }});
+          // 4. Mid-Rise Tier & 1st Cascading Setback (Floors L07 - L10, Z = 28.4m to 46.8m, R = 12.2m)
+          // Setback: West petal steps back into an open-air sky garden
+          for (let f = 7; f <= 10; f++) {{
+            const zMin = 28.4 + (f - 7) * 4.6;
+            const zMax = zMin + 4.6;
+            const lvl = f < 10 ? `L0${{f}}` : `L${{f}}`;
+            const poly = getCloverleafPolygon(20, 20, 12.2);
+            createPrism(`BLD_${{lvl}}_SIGNATURE`, poly, zMin, zMax, 0x0369a1, 0.88, "BLD", f, {{
+              name: `World One Signature Panoramic Residences (${{lvl}})`,
+              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-SG01-B`,
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "650 m²",
+              vol: "2990 m³",
+              owner: residentRoster[f - 3] || `World One Title Holder (${{lvl}})`,
+              val: "₹ 82.0 Cr"
+            }});
+            createBalconyRibbon(20, 20, 12.2, zMin + 0.2);
+          }}
 
-          // Architectural Crystalline Crown Spire & Flashing Beacon (48 to 62m)
-          const spGeo = new THREE.ConeGeometry(3.0, 14, 12);
+          // Sky Garden Terrace at Floor L07 Setback
+          const terraceMat = new THREE.MeshStandardMaterial({{ color: 0x15803d, roughness: 0.9 }});
+          const terrace = new THREE.Mesh(new THREE.BoxGeometry(4.2, 4.2, 0.2), terraceMat);
+          terrace.position.set(10.5, 14.5, 28.5);
+          groups.BLD.add(terrace);
+
+          // 5. High-Rise Sky Mansions & 2nd Cascading Setback (Floors L11 - L13, Z = 46.8m to 60.6m, R = 10.4m)
+          // Setback: South-East petal steps back into cantilevered sky duplexes
+          for (let f = 11; f <= 13; f++) {{
+            const zMin = 46.8 + (f - 11) * 4.6;
+            const zMax = zMin + 4.6;
+            const lvl = `L${{f}}`;
+            const poly = getCloverleafPolygon(20, 20, 10.4);
+            createPrism(`BLD_${{lvl}}_DUPLEX`, poly, zMin, zMax, 0x0ea5e9, 0.88, "BLD", f, {{
+              name: `World One High-Rise Sky Duplex Suites (${{lvl}})`,
+              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-DX01-C`,
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "480 m²",
+              vol: "2208 m³",
+              owner: residentRoster[f - 3] || `World One Sky Duplex Custodian (${{lvl}})`,
+              val: "₹ 110 Cr"
+            }});
+            createBalconyRibbon(20, 20, 10.4, zMin + 0.2);
+          }}
+
+          // 6. Sovereign Triplex Sky Palace & Penthouse with Private Ocean Plunge Pool (Floors L14 - L16, Z = 60.6m to 76.0m, R = 8.6m)
+          const polyPH = getCloverleafPolygon(20, 20, 8.6);
+          createPrism("BLD_SOVEREIGN_PENTHOUSE", polyPH, 60.6, 76.0, 0x06b6d4, 0.94, "BLD", 14, {{
+            name: "World One Sovereign Triplex Sky Palace & Penthouse (Floors L14-L16)",
+            ulpin: `${{data.base_ulpin}}-BLD-L16-PH01-P`,
+            z: "+60.6m to +76.0m",
+            area: "340 m²",
+            vol: "5236 m³",
+            owner: "Sovereign Sky Palace Family Trust (Chairman Suite)",
+            val: "₹ 240 Cr"
+          }});
+          createBalconyRibbon(20, 20, 8.6, 65.2);
+          createBalconyRibbon(20, 20, 8.6, 70.6);
+
+          // Cantilevered Ocean Infinity Plunge Pool on North Petal
+          const poolWater = new THREE.Mesh(
+            new THREE.BoxGeometry(5.2, 4.2, 1.2),
+            new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.05, transparent: true, opacity: 0.85 }})
+          );
+          poolWater.position.set(20, 28.5, 72.0);
+          groups.BLD.add(poolWater);
+
+          const poolGlass = new THREE.Mesh(
+            new THREE.BoxGeometry(5.6, 0.15, 1.6),
+            new THREE.MeshStandardMaterial({{ color: 0x38bdf8, transparent: true, opacity: 0.55 }})
+          );
+          poolGlass.position.set(20, 30.6, 72.2);
+          groups.BLD.add(poolGlass);
+
+          // 7. Sculpted Aerodynamic Crown Fins & Stainless Steel Spire (Z = 76.0m to 96.0m, 280.2m MSL)
+          // Crown Tapering Fins
+          const crownMat = new THREE.MeshStandardMaterial({{
+            color: 0xfbbf24,
+            emissive: 0xd97706,
+            roughness: 0.2,
+            metalness: 0.8
+          }});
+          for (let fi = 0; fi < 6; fi++) {{
+            const fAngle = (Math.PI * 2 * fi) / 6;
+            const finGeo = new THREE.BoxGeometry(0.3, 2.2, 8.0);
+            const fin = new THREE.Mesh(finGeo, crownMat);
+            fin.position.set(20 + 3.2 * Math.cos(fAngle), 20 + 3.2 * Math.sin(fAngle), 80.0);
+            fin.rotation.z = fAngle;
+            groups.AIR.add(fin);
+          }}
+
+          // Crown Spire Cone
+          const spGeo = new THREE.ConeGeometry(2.4, 12, 16);
           spGeo.rotateX(Math.PI / 2);
-          const spMat = new THREE.MeshStandardMaterial({{ color: 0xfbbf24, emissive: 0xd97706, roughness: 0.15, metalness: 0.6 }});
-          const spMesh = new THREE.Mesh(spGeo, spMat);
-          spMesh.position.set(20, 20, 55);
+          const spMesh = new THREE.Mesh(spGeo, crownMat);
+          spMesh.position.set(20, 20, 82.0);
           groups.AIR.add(spMesh);
 
-          const mastTopGeo = new THREE.CylinderGeometry(0.12, 0.35, 8, 8);
-          mastTopGeo.rotateX(Math.PI / 2);
-          const mastTop = new THREE.Mesh(mastTopGeo, new THREE.MeshBasicMaterial({{ color: 0xffffff }}));
-          mastTop.position.set(20, 20, 62);
-          groups.AIR.add(mastTop);
+          // Stainless Steel Needle Mast
+          const mastGeo = new THREE.CylinderGeometry(0.12, 0.35, 10, 8);
+          mastGeo.rotateX(Math.PI / 2);
+          const mast = new THREE.Mesh(mastGeo, new THREE.MeshStandardMaterial({{ color: 0xf8fafc, metalness: 0.95 }}));
+          mast.position.set(20, 20, 91.0);
+          groups.AIR.add(mast);
 
-          // 4-Tier Automated Robotic Valet Vault (-18m to 0m)
-          createPrism("SUB_VAULT", [[6,6],[34,6],[34,34],[6,34]], -18, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "Worli 4-Tier Automated Robotic Valet Vault & HVAC Plant",
+          // Aircraft Obstruction Warning Beacon
+          const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 12), new THREE.MeshBasicMaterial({{ color: 0xef4444 }}));
+          beacon.position.set(20, 20, 96.2);
+          groups.AIR.add(beacon);
+
+          // 8. Companion Curved Towers (The World Towers Triad: World View & World Crest)
+          // World Crest (South-West companion curved tower, 223m)
+          const crestGeo = new THREE.CylinderGeometry(4.2, 4.8, 38, 24, 1, false, 0, Math.PI * 1.5);
+          crestGeo.rotateX(Math.PI / 2);
+          const compMat = new THREE.MeshStandardMaterial({{
+            color: 0x0369a1,
+            metalness: 0.75,
+            roughness: 0.25,
+            transparent: true,
+            opacity: 0.85
+          }});
+          const crest = new THREE.Mesh(crestGeo, compMat);
+          crest.position.set(5.5, 30.5, 19.0);
+          groups.BLD.add(crest);
+
+          // World Crest crown ring
+          const crestCrown = new THREE.Mesh(new THREE.TorusGeometry(4.3, 0.3, 8, 24), whiteBalconyMat);
+          crestCrown.position.set(5.5, 30.5, 38.0);
+          groups.BLD.add(crestCrown);
+
+          // World View (South-East companion curved tower, 277m)
+          const viewGeo = new THREE.CylinderGeometry(4.5, 5.0, 52, 24, 1, false, 0, Math.PI * 1.5);
+          viewGeo.rotateX(Math.PI / 2);
+          const viewMesh = new THREE.Mesh(viewGeo, compMat);
+          viewMesh.position.set(34.5, 30.5, 26.0);
+          groups.BLD.add(viewMesh);
+
+          // World View crown ring
+          const viewCrown = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.3, 8, 24), whiteBalconyMat);
+          viewCrown.position.set(34.5, 30.5, 52.0);
+          groups.BLD.add(viewCrown);
+
+          // 9. Subsurface 4-Tier Automated Robotic Valet Vault (-20m to 0m)
+          createPrism("SUB_VAULT", [[4, 4], [36, 4], [36, 36], [4, 36]], -20, 0, 0xf59e0b, 0.88, "SUB", -1, {{
+            name: "Worli 4-Tier Automated Robotic Valet Vault (1200 Vehicle Bays & MEP Vault)",
             ulpin: `${{data.base_ulpin}}-SUB-B04-RP01-3`,
-            z: "-18.0m to 0.0m",
-            area: "784 m²",
-            vol: "14112 m³",
+            z: "-20.0m to 0.0m",
+            area: "1024 m²",
+            vol: "20480 m³",
             owner: "World One Resident Automated Valet Trust",
-            val: "₹ 110 Cr"
+            val: "₹ 160 Cr"
           }});
         }}
 
-        // ARCHETYPE 3: UB City & Kingfisher Towers (Bengaluru) - Dual Tower with Cantilevered Sky Mansion
+        // ARCHETYPE 3: UB City & Kingfisher Towers (Bengaluru) - Neo-Classical Roman Galleria & White House Penthouse
         function buildUBcitySteppedSpire(data) {{
-          // 1. Neoclassical Luxury Retail Galleria Podium (The Collection, 0 to 8m)
-          createPrism("BLD_GALLERIA", [[5,5],[35,5],[35,35],[5,35]], 0, 8, 0x059669, 0.86, "BLD", 1, {{
+          // 1. Neoclassical Luxury Retail Galleria (The Collection, 0 to 8m)
+          createPrism("BLD_GALLERIA", [[4,4],[36,4],[36,36],[4,36]], 0, 8, 0x059669, 0.86, "BLD", 1, {{
             name: "The Collection Luxury Galleria & Roman Arched Piazza",
             ulpin: `${{data.base_ulpin}}-BLD-P01-GL01-B`,
             z: "0.0m to +8.0m",
-            area: "900 m²",
-            vol: "7200 m³",
+            area: "1024 m²",
+            vol: "8192 m³",
             owner: "The Collection Luxury Galleria Piazza Trust",
-            val: "₹ 480 Cr"
+            val: "₹ 520 Cr"
           }});
+
+          // Central Roman Amphitheater & Piazza Water Fountain (at X = 20, Y = 20)
+          const pFountain = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.8, 0.4, 24), new THREE.MeshStandardMaterial({{ color: 0x64748b, roughness: 0.8 }}));
+          pFountain.rotateX(Math.PI / 2);
+          pFountain.position.set(20, 20, 8.2);
+          groups.BLD.add(pFountain);
+
+          const pWater = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 0.3, 24), new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1, transparent: true, opacity: 0.85 }}));
+          pWater.rotateX(Math.PI / 2);
+          pWater.position.set(20, 20, 8.3);
+          groups.BLD.add(pWater);
 
           const ubCorporateTenants = [
             "KKR & Co. India Private Equity Advisors",
             "Morgan Stanley Advantage Services India",
-            "United Breweries Holdings Ltd (Corporate Headquarters)",
-            "Blackstone India Real Estate Advisory"
+            "United Breweries Holdings Ltd (Corporate HQ)",
+            "Blackstone India Real Estate Advisory",
+            "Cisco Systems Global Innovation Studio"
           ];
 
-          // 2. Structure A: Corporate UB Tower (West Wing: x 7-19, y 9-31, 8 to 26m)
-          for (let f = 3; f <= 6; f++) {{
-            const zMin = 8 + (f - 3) * 4.5;
-            const zMax = zMin + 4.5;
-            createPrism(`BLD_UB_F0${{f}}`, [[7,9],[19,9],[19,31],[7,31]], zMin, zMax, 0x10b981, 0.85, "BLD", f, {{
+          // 2. Structure A: Corporate UB Tower (West Wing: X = 6-18, Y = 8-32, 8 to 28m)
+          for (let f = 3; f <= 7; f++) {{
+            const zMin = 8 + (f - 3) * 4.0;
+            const zMax = zMin + 4.0;
+            const lvl = `F0${{f}}`;
+            createPrism(`BLD_UB_${{lvl}}`, [[6,8],[18,8],[18,32],[6,32]], zMin, zMax, 0x10b981, 0.86, "BLD", f, {{
               name: `UB Corporate Tower Executive Offices (Level 0${{f}})`,
-              ulpin: `${{data.base_ulpin}}-BLD-F0${{f}}-UB01-U`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "264 m²",
-              vol: "1188 m³",
+              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-UB01-U`,
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "288 m²",
+              vol: "1152 m³",
               owner: ubCorporateTenants[f - 3] || "UBHL Corporate Holdings",
-              val: "₹ 28.0 Cr"
+              val: "₹ 34.0 Cr"
             }});
           }}
 
-          // Elevated Helipad on Stilt Columns atop UB Tower (Z = 28m)
-          const ubHeliGeo = new THREE.CylinderGeometry(5.5, 5.5, 0.4, 24);
+          // Elevated Helipad on Stilt Columns atop UB Tower (Z = 28.5m)
+          const ubHeliGeo = new THREE.CylinderGeometry(5.8, 5.8, 0.4, 24);
           ubHeliGeo.rotateX(Math.PI / 2);
-          const ubHeli = new THREE.Mesh(ubHeliGeo, new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.8 }}));
-          ubHeli.position.set(13, 20, 27);
+          const ubHeli = new THREE.Mesh(ubHeliGeo, new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.85 }}));
+          ubHeli.position.set(12, 20, 28.5);
           groups.AIR.add(ubHeli);
 
-          // Gilded Needle Spire atop UB Tower
-          const spGeo = new THREE.CylinderGeometry(0.15, 1.2, 14, 16);
+          // Soaring Gilded Needle Spire atop UB Tower (Z = 29m to 48m)
+          const spGeo = new THREE.CylinderGeometry(0.12, 1.2, 19, 16);
           spGeo.rotateX(Math.PI / 2);
-          const spMat = new THREE.MeshStandardMaterial({{ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 }});
+          const spMat = new THREE.MeshStandardMaterial({{ color: 0xf59e0b, metalness: 0.85, roughness: 0.2 }});
           const spMesh = new THREE.Mesh(spGeo, spMat);
-          spMesh.position.set(13, 20, 34);
+          spMesh.position.set(12, 20, 38.5);
           groups.AIR.add(spMesh);
 
           const kfResidents = [
@@ -1269,77 +1557,81 @@ def render_3d_digital_twin_component(
             "Sh. Kris & Sudha Gopalakrishnan"
           ];
 
-          // 3. Structure B: Prestige Kingfisher Towers (East Wing: x 21-33, y 9-31, 8 to 28m)
+          // 3. Structure B: Prestige Kingfisher Towers (East Wing: X = 22-34, Y = 8-32, 8 to 28m)
           for (let f = 3; f <= 6; f++) {{
-            const zMin = 8 + (f - 3) * 4.8;
-            const zMax = zMin + 4.8;
-            createPrism(`BLD_KF_F0${{f}}`, [[21,9],[33,9],[33,31],[21,31]], zMin, zMax, 0x0284c7, 0.85, "BLD", f, {{
+            const zMin = 8 + (f - 3) * 5.0;
+            const zMax = zMin + 5.0;
+            const lvl = `F0${{f}}`;
+            createPrism(`BLD_KF_${{lvl}}`, [[22,8],[34,8],[34,32],[22,32]], zMin, zMax, 0x0284c7, 0.86, "BLD", f, {{
               name: `Prestige Kingfisher Ultra-Luxury Residences (Level 0${{f}})`,
-              ulpin: `${{data.base_ulpin}}-BLD-F0${{f}}-KF01-K`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "264 m²",
-              vol: "1267 m³",
+              ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-KF01-K`,
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "288 m²",
+              vol: "1440 m³",
               owner: kfResidents[f - 3] || "Prestige Luxury Living",
-              val: "₹ 36.0 Cr"
+              val: "₹ 42.0 Cr"
             }});
           }}
 
-          // 4. THE FAMOUS CANTILEVERED "WHITE HOUSE IN THE SKY" MANSION (Z = 28 to 36m)
-          // Cantilever platform jutting out 2m over the tower edge
-          createPrism("BLD_WHITE_HOUSE_BASE", [[19,7],[35,7],[35,33],[19,33]], 28, 29, 0xf8fafc, 0.95, "BLD", 7, {{
-            name: "Prestige Cantilevered Steel Transfer Deck",
+          // 4. THE FAMOUS CANTILEVERED "WHITE HOUSE IN THE SKY" MANSION (Z = 28 to 38m)
+          createPrism("BLD_WHITE_HOUSE_BASE", [[19,6],[37,6],[37,34],[19,34]], 28, 29.5, 0xf8fafc, 0.95, "BLD", 7, {{
+            name: "Prestige Cantilevered Steel Transfer Deck (White House Base)",
             ulpin: `${{data.base_ulpin}}-BLD-F07-DK01-W`,
-            z: "+28.0m to +29.0m",
-            area: "416 m²",
-            vol: "416 m³",
-            owner: "Private Sky Mansion Trust",
-            val: "₹ 35.0 Cr"
+            z: "+28.0m to +29.5m",
+            area: "504 m²",
+            vol: "756 m³",
+            owner: "Sovereign Sky Mansion Trust",
+            val: "₹ 45.0 Cr"
           }});
 
-          // Neoclassical 2-Storey White Mansion & Infinity Pool
-          createPrism("BLD_SKY_MANSION", [[20,8],[34,8],[34,32],[20,32]], 29, 36, 0xf1f5f9, 0.95, "BLD", 8, {{
+          createPrism("BLD_SKY_MANSION", [[21,8],[35,8],[35,32],[21,32]], 29.5, 37.0, 0xf1f5f9, 0.96, "BLD", 8, {{
             name: "Prestige Kingfisher 'White House in the Sky' Luxury Penthouse (40,000 sq ft)",
             ulpin: `${{data.base_ulpin}}-BLD-F08-WH01-M`,
-            z: "+29.0m to +36.0m",
+            z: "+29.5m to +37.0m",
             area: "336 m²",
-            vol: "2352 m³",
+            vol: "2520 m³",
             owner: "Sovereign Sky Mansion Trust (Cantilevered White House)",
-            val: "₹ 175 Cr"
+            val: "₹ 195 Cr"
           }});
 
-          // Mansion Classical Pitched Roof
-          const roofGeo = new THREE.ConeGeometry(8, 4.5, 4);
+          const roofGeo = new THREE.ConeGeometry(9, 4.5, 4);
           roofGeo.rotateX(Math.PI / 2);
           roofGeo.rotateZ(Math.PI / 4);
-          const roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshStandardMaterial({{ color: 0x94a3b8, roughness: 0.3 }}));
-          roofMesh.position.set(27, 20, 38.2);
+          const roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshStandardMaterial({{ color: 0x64748b, roughness: 0.4 }}));
+          roofMesh.position.set(28, 20, 39.2);
           groups.AIR.add(roofMesh);
 
-          // Subsurface Luxury Supercar Parking
-          createPrism("SUB_UB", [[6,6],[34,6],[34,34],[6,34]], -14, 0, 0xf59e0b, 0.85, "SUB", -1, {{
+          const kfPool = new THREE.Mesh(new THREE.BoxGeometry(16, 3, 0.8), new THREE.MeshStandardMaterial({{ color: 0x06b6d4, roughness: 0.05, transparent: true, opacity: 0.9 }}));
+          kfPool.position.set(28, 6.8, 29.8);
+          groups.BLD.add(kfPool);
+
+          createPrism("SUB_UB", [[5,5],[35,5],[35,35],[5,35]], -14, 0, 0xf59e0b, 0.85, "SUB", -1, {{
             name: "UB City Supercar Concierge Basements (B1-B2)",
             ulpin: `${{data.base_ulpin}}-SUB-B02-UB01-5`,
             z: "-14.0m to 0.0m",
-            area: "784 m²",
-            vol: "10976 m³",
+            area: "900 m²",
+            vol: "12600 m³",
             owner: "UB City Supercar Concierge & Security Operations",
-            val: "₹ 65.0 Cr"
+            val: "₹ 75.0 Cr"
           }});
         }}
 
         // ARCHETYPE 4: GIFT Diamond Tower & BKC Diamond Tower - Crystalline Faceted Skyscraper
         function buildDiamondTower(data) {{
-          const diamondPoly = [[14,6],[26,6],[34,14],[34,26],[26,34],[14,34],[6,26],[6,14]];
+          const isGIFT = data.city && data.city.includes("GIFT");
+          const towerName = isGIFT ? "GIFT Diamond Tower Pinnacle" : "BKC Bharat Diamond Bourse Tower";
+
+          const diamondPoly = [[14,5],[26,5],[35,14],[35,26],[26,35],[14,35],[5,26],[5,14]];
           
           const bourseTenants = [
             "Bharat Diamond Bourse / International Bullion Exchange",
             "Gemological Institute of America (GIA) India",
             "Rosy Blue India Private Limited (Diamond Trading Wing)",
-            "Kiran Gems Private Limited",
-            "State Bank of India International Banking Branch",
-            "NSE International Exchange (NSE IX)",
+            "Kiran Gems Private Limited (Global Export Center)",
+            "State Bank of India International Bullion Branch",
+            "NSE International Exchange (NSE IX FinTech Center)",
             "International Financial Services Centres Authority (IFSCA)",
-            "Global Diamond Bourse Custodian"
+            "Global Diamond Trading & Vault Custodian"
           ];
 
           for (let f = 0; f <= 7; f++) {{
@@ -1347,73 +1639,148 @@ def render_3d_digital_twin_component(
             const zMax = zMin + 4.5;
             const lvl = f === 0 ? "G00" : `F0${{f}}`;
             
-            createPrism(`BLD_${{lvl}}_DIAMOND`, diamondPoly, zMin, zMax, 0x06b6d4, 0.85, "BLD", f, {{
-              name: `Diamond Bourse International Trading Floor (${{lvl}})`,
+            createPrism(`BLD_${{lvl}}_DIAMOND`, diamondPoly, zMin, zMax, 0x06b6d4, 0.88, "BLD", f, {{
+              name: `${{towerName}} Trading Floor (${{lvl}})`,
               ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-DM01-D`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "624 m²",
-              vol: "2808 m³",
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "650 m²",
+              vol: "2925 m³",
               owner: bourseTenants[f] || "Global Diamond Bourse Custodian",
-              val: "₹ 62.0 Cr"
+              val: `₹ ${{(65.0 + f * 4.0).toFixed(1)}} Cr`
+            }});
+
+            [-1, 1].forEach(dx => {{
+              [-1, 1].forEach(dy => {{
+                const cornerFacet = new THREE.Mesh(new THREE.ConeGeometry(2.0, 4.4, 4), new THREE.MeshStandardMaterial({{ color: 0x38bdf8, roughness: 0.1, metalness: 0.8, transparent: true, opacity: 0.7 }}));
+                cornerFacet.position.set(20 + dx * 13, 20 + dy * 13, zMin + 2.2);
+                cornerFacet.rotation.z = Math.PI / 4;
+                groups.BLD.add(cornerFacet);
+              }});
             }});
           }}
 
-          // Angular Sky Atrium Cut
-          const aGeo = new THREE.ConeGeometry(5, 8, 4);
-          aGeo.rotateX(Math.PI / 2);
-          const aMat = new THREE.MeshStandardMaterial({{ color: 0x38bdf8, transparent: true, opacity: 0.9 }});
-          const aMesh = new THREE.Mesh(aGeo, aMat);
-          aMesh.position.set(20, 20, 39);
-          groups.AIR.add(aMesh);
+          const crownGeo = new THREE.ConeGeometry(9.0, 16, 8);
+          crownGeo.rotateX(Math.PI / 2);
+          const crownMat = new THREE.MeshStandardMaterial({{ color: 0x0ea5e9, roughness: 0.1, metalness: 0.85, transparent: true, opacity: 0.85 }});
+          const crownMesh = new THREE.Mesh(crownGeo, crownMat);
+          crownMesh.position.set(20, 20, 44.0);
+          groups.AIR.add(crownMesh);
 
-          // Subsurface Utility Tunnel (TUM) Connection
-          const pGeo = new THREE.CylinderGeometry(1.2, 1.2, 44, 16);
-          pGeo.rotateZ(Math.PI / 2);
-          const pMat = new THREE.MeshStandardMaterial({{ color: 0xa855f7, transparent: true, opacity: 0.9 }});
-          const pMesh = new THREE.Mesh(pGeo, pMat);
-          pMesh.position.set(20, 10, -8);
-          groups.UTL.add(pMesh);
-          meshMap.set("UTL_TUM", pMesh);
+          const hGeo = new THREE.CylinderGeometry(5.2, 5.2, 0.35, 24);
+          hGeo.rotateX(Math.PI / 2);
+          const hMesh = new THREE.Mesh(hGeo, new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.85 }}));
+          hMesh.position.set(20, 14, 46.0);
+          groups.AIR.add(hMesh);
 
-          createPrism("SUB_VAULT", [[8,8],[32,8],[32,32],[8,32]], -16, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "High-Security Diamond & Bullion Vault (B1-B3)",
+          const hRing = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.8, 24), new THREE.MeshBasicMaterial({{ color: 0xfacc15, side: THREE.DoubleSide }}));
+          hRing.position.set(20, 14, 46.2);
+          groups.AIR.add(hRing);
+
+          createPrism("SUB_VAULT", [[6,6],[34,6],[34,34],[6,34]], -16, 0, 0xf59e0b, 0.88, "SUB", -1, {{
+            name: "High-Security Bullion & Diamond Vault (B1-B3 Fortress)",
             ulpin: `${{data.base_ulpin}}-SUB-B03-BV01-9`,
             z: "-16.0m to 0.0m",
-            area: "576 m²",
-            vol: "9216 m³",
+            area: "784 m²",
+            vol: "12544 m³",
             owner: "Reserve Bank of India & Customs High-Security Depository",
-            val: "₹ 480 Cr"
+            val: "₹ 520 Cr"
           }});
+
+          const tubeGeo = new THREE.CylinderGeometry(1.4, 1.4, 42, 16);
+          tubeGeo.rotateZ(Math.PI / 2);
+          const tubeMesh = new THREE.Mesh(tubeGeo, new THREE.MeshStandardMaterial({{ color: 0xa855f7, transparent: true, opacity: 0.9 }}));
+          tubeMesh.position.set(20, 10, -8);
+          groups.UTL.add(tubeMesh);
+          meshMap.set("UTL_TUM", tubeMesh);
         }}
 
-        // ARCHETYPE 5: Connaught Outer Circle & Rajiv Chowk Metro (New Delhi) - Concentric Colonnade & Subterranean Hub
+        // ARCHETYPE 5: Connaught Place Heritage Colonnade (New Delhi) - Concentric Colonnades & National Flag
         function buildHeritageRotunda(data) {{
-          // 1. Outer Georgian Doric Colonnade Arcade (Ground to +6m, Radius 18m)
-          createCylinderPrism("BLD_COLONNADE", 18, 18, 0, 6, 36, 0xf8fafc, 0.9, "BLD", 0, {{
-            name: "Lutyens Heritage Colonnade Arcade & Doric Portico (Outer Circle)",
-            ulpin: `${{data.base_ulpin}}-BLD-G00-HD01-1`,
-            z: "0.0m to +6.0m",
-            area: "1017 m²",
-            vol: "6102 m³",
+          // 1. Outer Georgian Palladian Colonnade Arcade (Ground to +6.5m, Radius 18.5m)
+          createCylinderPrism("BLD_OUTER_COLONNADE", 18.5, 18.5, 0, 6.5, 48, 0xf8fafc, 0.92, "BLD", 0, {{
+            name: "Lutyens Georgian Heritage Colonnade Arcade (Outer Circle / Connaught Circus)",
+            ulpin: `${{data.base_ulpin}}-BLD-G00-OC01-1`,
+            z: "0.0m to +6.5m",
+            area: "1075 m²",
+            vol: "6988 m³",
             owner: "New Delhi Municipal Council (Colonnade Heritage Custodian)",
-            val: "₹ 340 Cr"
+            val: "₹ 380 Cr"
           }});
 
-          // 2. Central Park Circular Green Lawn & Inner Circle Ring
-          const parkGeo = new THREE.CylinderGeometry(11, 11, 0.3, 32);
+          const colMat = new THREE.MeshStandardMaterial({{ color: 0xf1f5f9, roughness: 0.7 }});
+          for (let a = 0; a < Math.PI * 2; a += Math.PI / 12) {{
+            const isAvenue = Math.abs(a % (Math.PI / 4)) < 0.15;
+            if (!isAvenue) {{
+              const dCol = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.25, 6.2, 12), colMat);
+              dCol.rotateX(Math.PI / 2);
+              dCol.position.set(20 + Math.cos(a) * 18.5, 20 + Math.sin(a) * 18.5, 3.1);
+              groups.SUR.add(dCol);
+            }}
+          }}
+
+          // 2. Inner Circular Georgian Colonnade (Ground to +6.5m, Radius 12.5m)
+          createCylinderPrism("BLD_INNER_COLONNADE", 12.5, 12.5, 0, 6.5, 36, 0xf8fafc, 0.92, "BLD", 0, {{
+            name: "Connaught Place Inner Circle Heritage Colonnade & Verandas",
+            ulpin: `${{data.base_ulpin}}-BLD-G00-IC01-2`,
+            z: "0.0m to +6.5m",
+            area: "490 m²",
+            vol: "3185 m³",
+            owner: "NDMC Heritage & Commercial Properties Wing",
+            val: "₹ 320 Cr"
+          }});
+
+          for (let a = 0; a < Math.PI * 2; a += Math.PI / 10) {{
+            const isAvenue = Math.abs(a % (Math.PI / 4)) < 0.15;
+            if (!isAvenue) {{
+              const dCol = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 6.2, 12), colMat);
+              dCol.rotateX(Math.PI / 2);
+              dCol.position.set(20 + Math.cos(a) * 12.5, 20 + Math.sin(a) * 12.5, 3.1);
+              groups.SUR.add(dCol);
+            }}
+          }}
+
+          // 3. Central Park Circular Green Lawn (Radius 8.5m)
+          const parkGeo = new THREE.CylinderGeometry(8.5, 8.5, 0.35, 36);
           parkGeo.rotateX(Math.PI / 2);
           const parkMat = new THREE.MeshStandardMaterial({{ color: 0x15803d, roughness: 0.9 }});
           const parkMesh = new THREE.Mesh(parkGeo, parkMat);
-          parkMesh.position.set(20, 20, 0.15);
+          parkMesh.position.set(20, 20, 0.18);
           groups.SUR.add(parkMesh);
 
-          // Central Monumental National Flag Mast (Height 16m)
-          const flagMastGeo = new THREE.CylinderGeometry(0.12, 0.3, 16, 12);
-          flagMastGeo.rotateX(Math.PI / 2);
-          const flagMast = new THREE.Mesh(flagMastGeo, new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.8 }}));
-          flagMast.position.set(20, 20, 8.0);
-          groups.SUR.add(flagMast);
+          const walkGeo = new THREE.RingGeometry(5.5, 6.8, 36);
+          const walkMat = new THREE.MeshStandardMaterial({{ color: 0xcbd5e1, roughness: 0.8 }});
+          const walkMesh = new THREE.Mesh(walkGeo, walkMat);
+          walkMesh.position.set(20, 20, 0.38);
+          groups.SUR.add(walkMesh);
 
+          // 4. MONUMENTAL 207-FOOT CENTRAL INDIAN NATIONAL FLAG (TIRANGA)
+          const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.32, 20, 16), new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.9 }}));
+          flagPole.rotateX(Math.PI / 2);
+          flagPole.position.set(20, 20, 10.0);
+          groups.SUR.add(flagPole);
+
+          const finial = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 12), new THREE.MeshStandardMaterial({{ color: 0xfacc15, metalness: 0.9, roughness: 0.1 }}));
+          finial.position.set(20, 20, 20.2);
+          groups.SUR.add(finial);
+
+          const flagCanvas = document.createElement('canvas');
+          flagCanvas.width = 256; flagCanvas.height = 160;
+          const fctx = flagCanvas.getContext('2d');
+          fctx.fillStyle = '#ff9933'; fctx.fillRect(0, 0, 256, 53);
+          fctx.fillStyle = '#ffffff'; fctx.fillRect(0, 53, 256, 54);
+          fctx.fillStyle = '#138808'; fctx.fillRect(0, 107, 256, 53);
+          fctx.strokeStyle = '#000080'; fctx.lineWidth = 3;
+          fctx.beginPath(); fctx.arc(128, 80, 20, 0, Math.PI * 2); fctx.stroke();
+          for (let s = 0; s < 24; s++) {{
+            const rad = (s / 24) * Math.PI * 2;
+            fctx.beginPath(); fctx.moveTo(128, 80); fctx.lineTo(128 + Math.cos(rad) * 19, 80 + Math.sin(rad) * 19); fctx.stroke();
+          }}
+          const flagTex = new THREE.CanvasTexture(flagCanvas);
+          const flagMesh = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 4.0), new THREE.MeshStandardMaterial({{ map: flagTex, side: THREE.DoubleSide }}));
+          flagMesh.position.set(23.2, 20, 18.0);
+          groups.SUR.add(flagMesh);
+
+          // 5. Commercial Ring Storeys (Z = 6.5m to 20m)
           const cpLeaseholders = [
             "Standard Chartered Bank Heritage Flagship Branch",
             "Oxford University Press & Legal Chambers",
@@ -1421,154 +1788,654 @@ def render_3d_digital_twin_component(
             "Central Business District Corporate Chambers"
           ];
 
-          // 3. Middle Commercial Ring Storeys (6 to 24m)
-          for (let f = 1; f <= 4; f++) {{
-            const zMin = 6 + (f - 1) * 4.5;
+          for (let f = 1; f <= 3; f++) {{
+            const zMin = 6.5 + (f - 1) * 4.5;
             const zMax = zMin + 4.5;
-            createCylinderPrism(`BLD_F0${{f}}_ROTUNDA`, 13, 13, zMin, zMax, 28, 0xd97706, 0.82, "BLD", f, {{
+            createCylinderPrism(`BLD_F0${{f}}_ROTUNDA`, 12.5, 12.5, zMin, zMax, 32, 0xd97706, 0.85, "BLD", f, {{
               name: `Connaught Place Central Business Suites (Tier ${{f}})`,
               ulpin: `${{data.base_ulpin}}-BLD-F0${{f}}-RT01-N`,
-              z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "530 m²",
-              vol: "2385 m³",
+              z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+              area: "490 m²",
+              vol: "2205 m³",
               owner: cpLeaseholders[f - 1] || "NDMC Authorized Commercial Leaseholder",
-              val: "₹ 48.0 Cr"
+              val: `₹ ${{(50.0 + f * 5.0).toFixed(1)}} Cr`
             }});
           }}
 
-          // 4. Stepped Rotunda Dome Lantern (24 to 32m)
-          const dGeo = new THREE.SphereGeometry(6.5, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-          dGeo.rotateX(Math.PI / 2);
-          const dMat = new THREE.MeshStandardMaterial({{ color: 0x9a3412, roughness: 0.5 }});
-          const dMesh = new THREE.Mesh(dGeo, dMat);
-          dMesh.position.set(20, 20, 24);
-          groups.AIR.add(dMesh);
-
-          // 5. Multi-Level Rajiv Chowk Underground Metro Cavern
-          // B1: Concourse & Palika Bazaar Link (-7 to 0m)
-          createPrism("SUB_CONCOURSE", [[5,5],[35,5],[35,35],[5,35]], -7, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "Rajiv Chowk Metro Concourse & Palika Underground Link",
+          // 6. Multi-Level Rajiv Chowk Underground Metro Hub & Palika Bazaar
+          createPrism("SUB_CONCOURSE", [[4,4],[36,4],[36,36],[4,36]], -6, 0, 0xf59e0b, 0.88, "SUB", -1, {{
+            name: "Rajiv Chowk Metro Concourse & Palika Bazaar Underground Market",
             ulpin: `${{data.base_ulpin}}-SUB-B01-RC01-4`,
-            z: "-7.0m to 0.0m",
-            area: "900 m²",
-            vol: "6300 m³",
-            owner: "Delhi Metro Rail Corp (DMRC Station Operations)",
-            val: "₹ 420 Cr"
+            z: "-6.0m to 0.0m",
+            area: "1024 m²",
+            vol: "6144 m³",
+            owner: "Delhi Metro Rail Corp & Palika Bazaar Traders Association",
+            val: "₹ 480 Cr"
           }});
 
-          // B2: Yellow Line (North-South) Dual Island Platforms (-14 to -7m)
-          createPrism("SUB_YELLOW_LINE", [[13,2],[27,2],[27,38],[13,38]], -14, -7, 0xeab308, 0.88, "UTL", -2, {{
-            name: "Yellow Line Dual Island Platform 1 & 2 (North-South Rapid Transit)",
+          createPrism("SUB_YELLOW_LINE", [[13,2],[27,2],[27,38],[13,38]], -13, -6, 0xeab308, 0.9, "UTL", -2, {{
+            name: "Yellow Line Dual Island Platforms 1 & 2 (Samaypur Badli - Millennium City Centre)",
             ulpin: `${{data.base_ulpin}}-UTL-B02-YL01-Y`,
-            z: "-14.0m to -7.0m",
+            z: "-13.0m to -6.0m",
             area: "504 m²",
             vol: "3528 m³",
             owner: "DMRC Yellow Line Operations Directorate",
-            val: "₹ 380 Cr"
+            val: "₹ 410 Cr"
           }});
 
-          // B3: Blue Line (East-West) Deep Platform & Shield Tunnels (-22 to -14m)
-          createPrism("SUB_BLUE_LINE", [[2,13],[38,13],[38,27],[2,27]], -22, -14, 0x0284c7, 0.9, "UTL", -3, {{
-            name: "Blue Line Deep Platform 3 & 4 (East-West Metro Corridor)",
+          createPrism("SUB_BLUE_LINE", [[2,13],[38,13],[38,27],[2,27]], -21, -13, 0x0284c7, 0.9, "UTL", -3, {{
+            name: "Blue Line Deep Platform 3 & 4 (Dwarka Sector 21 - Noida Electronic City)",
             ulpin: `${{data.base_ulpin}}-UTL-B03-BL01-B`,
-            z: "-22.0m to -14.0m",
+            z: "-21.0m to -13.0m",
             area: "504 m²",
             vol: "4032 m³",
             owner: "DMRC Blue Line Operations Directorate",
-            val: "₹ 410 Cr"
+            val: "₹ 440 Cr"
           }});
         }}
 
         // ARCHETYPE 6: Seawoods Grand Central (Navi Mumbai) - Transit-Oriented Development (TOD)
         function buildSeawoodsQuadPodium(data) {{
-          // 1. Nexus Grand Central 3-Storey Retail Mall Podium (0 to 10m)
-          createPrism("BLD_PODIUM", [[3,3],[37,3],[37,37],[3,37]], 0, 10, 0x0284c7, 0.85, "BLD", 0, {{
-            name: "Nexus Grand Central Retail & Multiplex Podium (Floors G00-L02)",
+          // -----------------------------------------------------------------
+          // 1. GRAND RETAIL PODIUM: NEXUS GRAND CENTRAL MALL (Z = 0 to 12.0m)
+          // -----------------------------------------------------------------
+          // Level G00: Hypermarket, Station Concourse & Grand Retail (Z = 0.0 to 4.2m)
+          const polyPodiumG00 = [
+            [4, 4.5], [10, 2.2], [16, 1.0], [20, 0.6], [24, 1.0], [30, 2.2], [36, 4.5],
+            [38, 12], [38, 37], [35, 39], [5, 39], [2, 37], [2, 12]
+          ];
+          createPrism("BLD_PODIUM_G00", polyPodiumG00, 0, 4.2, 0x0284c7, 0.88, "BLD", 0, {{
+            name: "Nexus Grand Central Retail Atrium & Transit Concourse (Ground Floor)",
             ulpin: `${{data.base_ulpin}}-BLD-G00-POD1-8`,
-            z: "0.0m to +10.0m",
-            area: "1156 m²",
-            vol: "11560 m³",
-            owner: "Nexus Select Trust (Nexus Grand Central Mall Retailers)",
-            val: "₹ 620 Cr"
+            z: "0.0m to +4.2m",
+            area: "1240 m²",
+            vol: "5208 m³",
+            owner: "Nexus Select Trust (Retail Anchors & Central Transit Concourse)",
+            val: "₹ 680 Cr"
           }});
 
-          // 2. Active Railway Track Corridor with Dual Tracks cutting through Ground Level
-          const trkCorridor = new THREE.Mesh(new THREE.BoxGeometry(44, 5, 0.3), new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.9 }}));
-          trkCorridor.position.set(20, 20, 0.15);
-          groups.SUR.add(trkCorridor);
-
-          [-1.5, 1.5].forEach(offsetY => {{
-            const railMesh = new THREE.Mesh(new THREE.BoxGeometry(44, 0.35, 0.25), new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 }}));
-            railMesh.position.set(20, 20 + offsetY, 0.35);
-            groups.SUR.add(railMesh);
+          // Level L01: International Brands & Fashion Galleria (Z = 4.2 to 8.2m)
+          const polyPodiumL01 = [
+            [4.5, 5.5], [11, 3.2], [20, 2.0], [29, 3.2], [35.5, 5.5],
+            [37.5, 13], [37.5, 36.5], [34.5, 38.5], [5.5, 38.5], [2.5, 36.5], [2.5, 13]
+          ];
+          createPrism("BLD_PODIUM_L01", polyPodiumL01, 4.2, 8.2, 0x0369a1, 0.88, "BLD", 1, {{
+            name: "Nexus Grand Central Fashion Galleria & Central Atrium (Level 01)",
+            ulpin: `${{data.base_ulpin}}-BLD-L01-POD2-9`,
+            z: "+4.2m to +8.2m",
+            area: "1150 m²",
+            vol: "4600 m³",
+            owner: "Nexus Select Trust (International Retail Tenants)",
+            val: "₹ 540 Cr"
           }});
 
-          // 3. Five Elliptical Skylights on the Podium Roof Terrace (Z = 10m)
-          const mainDome = new THREE.Mesh(new THREE.SphereGeometry(4.6, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({{ color: 0x38bdf8, transparent: true, opacity: 0.82, roughness: 0.1 }}));
-          mainDome.position.set(20, 20, 10);
-          groups.AIR.add(mainDome);
-
-          const domeLocs = [[11, 11], [29, 11], [11, 29], [29, 29]];
-          domeLocs.forEach(([dx, dy]) => {{
-            const sDome = new THREE.Mesh(new THREE.SphereGeometry(2.3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({{ color: 0x06b6d4, transparent: true, opacity: 0.8, roughness: 0.1 }}));
-            sDome.position.set(dx, dy, 10);
-            groups.AIR.add(sDome);
+          // Level L02: PVR INOX Multiplex, Food Court & Sky Dining (Z = 8.2 to 12.0m)
+          const polyPodiumL02 = [
+            [5, 6.5], [12, 4.5], [20, 3.5], [28, 4.5], [35, 6.5],
+            [37, 14], [37, 36], [34, 38], [6, 38], [3, 36], [3, 14]
+          ];
+          createPrism("BLD_PODIUM_L02", polyPodiumL02, 8.2, 12.0, 0x0284c7, 0.88, "BLD", 2, {{
+            name: "PVR INOX 11-Screen Multiplex & Sky Dining Terrace (Level 02)",
+            ulpin: `${{data.base_ulpin}}-BLD-L02-POD3-1`,
+            z: "+8.2m to +12.0m",
+            area: "1080 m²",
+            vol: "4104 m³",
+            owner: "PVR INOX Limited & Nexus Gourmet Dining SPV",
+            val: "₹ 490 Cr"
           }});
 
-          // 4. Four Distinct Quad Towers (Floors 3 to 7, 10 to 34m)
-          const quads = [
-            {{ id: "T1", name: "Quad Tower 1 (Fintech & Cloud Hub)", poly: [[5,22],[17,22],[17,35],[5,35]], clr: 0x0369a1, owner: "Larsen & Toubro Infotech (LTIMindtree Cloud Center)" }},
-            {{ id: "T2", name: "Quad Tower 2 (Engineering & R&D)", poly: [[23,22],[35,22],[35,35],[23,35]], clr: 0x38bdf8, owner: "Jacobs Engineering India Private Limited" }},
-            {{ id: "T3", name: "Quad Tower 3 (Global Business Services)", poly: [[5,5],[17,5],[17,18],[5,18]], clr: 0x0284c7, owner: "BNP Paribas India Solutions Private Limited" }},
-            {{ id: "T4", name: "Quad Tower 4 (Multinational Headquarters)", poly: [[23,5],[35,5],[35,18],[23,18]], clr: 0x0ea5e9, owner: "Siemens Healthcare & Smart Infrastructure HQ" }}
+          // Stepped Terrace Outdoor Dining Decks & Planter Greenery (Z = 12.0m)
+          const deckMat = new THREE.MeshStandardMaterial({{ color: 0x78350f, roughness: 0.85 }});
+          const deckWest = new THREE.Mesh(new THREE.BoxGeometry(6, 12, 0.1), deckMat);
+          deckWest.position.set(6, 14, 12.05);
+          groups.BLD.add(deckWest);
+          const deckEast = new THREE.Mesh(new THREE.BoxGeometry(6, 12, 0.1), deckMat);
+          deckEast.position.set(34, 14, 12.05);
+          groups.BLD.add(deckEast);
+
+          // Green Planter Hedges around Terraces
+          const hedgeMat = new THREE.MeshStandardMaterial({{ color: 0x166534, roughness: 0.9 }});
+          [[6, 8], [34, 8], [2.8, 14], [37.2, 14]].forEach(([hx, hy]) => {{
+            const hedge = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.8, 0.8), hedgeMat);
+            hedge.position.set(hx, hy, 12.4);
+            groups.BLD.add(hedge);
+          }});
+
+          // Grand Main Entrance Glass Canopy & Portico (South Facade, Z = 4.0 to 6.2m)
+          const canopyTex = getCurvedCanopyTexture();
+          const canopyMat = new THREE.MeshStandardMaterial({{
+            map: canopyTex,
+            color: 0xffffff,
+            roughness: 0.2,
+            transparent: true,
+            opacity: 0.88,
+            side: THREE.DoubleSide
+          }});
+          const canopyGeo = new THREE.BoxGeometry(16, 6, 0.3);
+          const canopyMesh = new THREE.Mesh(canopyGeo, canopyMat);
+          canopyMesh.position.set(20, -1.2, 5.0);
+          canopyMesh.rotation.x = 0.08;
+          groups.BLD.add(canopyMesh);
+
+          // White steel tubular pylons supporting entrance canopy
+          const pylonMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.8, roughness: 0.2 }});
+          [-6.5, 6.5].forEach(px => {{
+            const pyl = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 5.2, 12), pylonMat);
+            pyl.rotateX(Math.PI / 2);
+            pyl.position.set(20 + px, -3.8, 2.6);
+            groups.SUR.add(pyl);
+          }});
+
+          // 3D Entrance Signboard Banner over Canopy
+          const signCanvas = document.createElement('canvas');
+          signCanvas.width = 512; signCanvas.height = 64;
+          const sctx = signCanvas.getContext('2d');
+          sctx.fillStyle = '#0b3c5d'; sctx.fillRect(0, 0, 512, 64);
+          sctx.strokeStyle = '#38bdf8'; sctx.lineWidth = 4; sctx.strokeRect(2, 2, 508, 60);
+          sctx.fillStyle = '#f8fafc'; sctx.font = 'bold 22px sans-serif'; sctx.textAlign = 'center';
+          sctx.fillText('NEXUS SEAWOODS • GRAND CENTRAL TOD', 256, 40);
+          const sTex = new THREE.CanvasTexture(signCanvas);
+          const sMesh = new THREE.Mesh(new THREE.BoxGeometry(13, 0.2, 1.2), new THREE.MeshStandardMaterial({{ map: sTex }}));
+          sMesh.position.set(20, 0.8, 6.2);
+          groups.BLD.add(sMesh);
+
+          // Longitudinal Curvilinear Glass Barrel-Vault Skylight Spine (Z = 12.0m to 14.5m)
+          const skylightGeo = new THREE.CylinderGeometry(2.8, 2.8, 24, 24, 1, false, 0, Math.PI);
+          skylightGeo.rotateZ(Math.PI / 2);
+          skylightGeo.rotateX(Math.PI / 2);
+          const skylightMat = new THREE.MeshStandardMaterial({{
+            color: 0x38bdf8,
+            roughness: 0.1,
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+          }});
+          const skylightMesh = new THREE.Mesh(skylightGeo, skylightMat);
+          skylightMesh.position.set(20, 22, 12.0);
+          groups.BLD.add(skylightMesh);
+
+          // Steel Arch Ribs along Skylight Spine
+          const ribMat = new THREE.MeshStandardMaterial({{ color: 0x0f172a, metalness: 0.8 }});
+          for (let ry = 11; ry <= 33; ry += 3) {{
+            const ribGeo = new THREE.TorusGeometry(2.85, 0.08, 8, 24, Math.PI);
+            ribGeo.rotateZ(Math.PI);
+            ribGeo.rotateY(Math.PI / 2);
+            const ribMesh = new THREE.Mesh(ribGeo, ribMat);
+            ribMesh.position.set(20, ry, 12.0);
+            groups.BLD.add(ribMesh);
+          }}
+
+          // -----------------------------------------------------------------
+          // 2. INTEGRATED SEAWOODS-DARAVE RAILWAY STATION & LOCAL EMU TRAIN
+          // -----------------------------------------------------------------
+          // Ballasted Gravel Trackbed Corridor (Z = 0.05m)
+          const ballastMat = new THREE.MeshStandardMaterial({{ color: 0x334155, roughness: 0.95 }});
+          const ballastMesh = new THREE.Mesh(new THREE.BoxGeometry(8.4, 56, 0.2), ballastMat);
+          ballastMesh.position.set(20, 19, 0.1);
+          groups.SUR.add(ballastMesh);
+
+          // Dual Railway Tracks: Track 1 (Up Harbour) at X = 18.2, Track 2 (Down Harbour) at X = 21.8
+          const sleeperMat = new THREE.MeshStandardMaterial({{ color: 0x475569, roughness: 0.85 }});
+          const railMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.95, roughness: 0.15 }});
+
+          [18.2, 21.8].forEach(trackX => {{
+            // Concrete sleepers along corridor
+            for (let sy = -7; sy <= 45; sy += 1.4) {{
+              const sleeper = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.3, 0.15), sleeperMat);
+              sleeper.position.set(trackX, sy, 0.22);
+              groups.SUR.add(sleeper);
+            }}
+            // Dual steel rails
+            [-0.7, 0.7].forEach(rx => {{
+              const rail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 56, 0.22), railMat);
+              rail.position.set(trackX + rx, 19, 0.38);
+              groups.SUR.add(rail);
+            }});
+          }});
+
+          // Covered Passenger Island Platforms (Z = 0.0 to 1.1m)
+          const yellowEdgeMat = new THREE.MeshBasicMaterial({{ color: 0xfacc15 }});
+
+          // West Platform (X = 14 to 17) & East Platform (X = 23 to 26)
+          [
+            {{ x: 15.2, name: "Seawoods-Darave Platform 1 & 2 (Harbour Line)", ulpin: `${{data.base_ulpin}}-SUR-PF01-P1` }},
+            {{ x: 24.8, name: "Seawoods-Darave Platform 3 & 4 (Trans-Harbour Line)", ulpin: `${{data.base_ulpin}}-SUR-PF02-P2` }}
+          ].forEach(p => {{
+            createPrism(`SUR_PLAT_${{p.x < 20 ? "W" : "E"}}`, [
+              [p.x - 1.4, 0], [p.x + 1.4, 0], [p.x + 1.4, 38], [p.x - 1.4, 38]
+            ], 0, 1.1, 0x64748b, 0.95, "SUR", 0, {{
+              name: p.name,
+              ulpin: p.ulpin,
+              z: "0.0m to +1.1m",
+              area: "106 m²",
+              vol: "116 m³",
+              owner: "Central Railway (Mumbai Suburban Division)",
+              val: "₹ 180 Cr"
+            }});
+
+            // Yellow tactile safety line along platform edge
+            const tactileEdge = new THREE.Mesh(new THREE.BoxGeometry(0.25, 38, 0.02), yellowEdgeMat);
+            tactileEdge.position.set(p.x + (p.x < 20 ? 1.3 : -1.3), 19, 1.11);
+            groups.SUR.add(tactileEdge);
+
+            // Platform Roof Canopy on tubular steel stanchions
+            const canopyRoof = new THREE.Mesh(new THREE.BoxGeometry(3.0, 36, 0.15), new THREE.MeshStandardMaterial({{ color: 0x0284c7, metalness: 0.5, roughness: 0.3 }}));
+            canopyRoof.position.set(p.x, 19, 3.8);
+            groups.SUR.add(canopyRoof);
+
+            for (let cy = 4; cy <= 34; cy += 6) {{
+              const col = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.7, 8), pylonMat);
+              col.rotateX(Math.PI / 2);
+              col.position.set(p.x, cy, 2.45);
+              groups.SUR.add(col);
+            }}
+
+            // Multilingual Indian Railways Station Nameboards
+            createStationSignboard("सीवूड्स - दारावे", "SEAWOODS - DARAVE", p.x, 6, 2.6, 0);
+            createStationSignboard("सीवूड्स - दारावे", "SEAWOODS - DARAVE", p.x, 32, 2.6, 0);
+
+            // Escalators leading to Mall Concourse
+            const escMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.8 }});
+            const esc = new THREE.Mesh(new THREE.BoxGeometry(1.2, 5.0, 0.3), escMat);
+            esc.position.set(p.x, 20, 2.6);
+            esc.rotation.x = -Math.PI / 6;
+            groups.SUR.add(esc);
+          }});
+
+          // Overhead Electrification (OHE) Catenary Gantries & Contact Wires
+          const oheGantryMat = new THREE.MeshStandardMaterial({{ color: 0x475569, metalness: 0.85 }});
+          [-3, 11, 25, 41].forEach(gy => {{
+            // Vertical portal masts
+            [-4.8, 4.8].forEach(gx => {{
+              const mast = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 5.4), oheGantryMat);
+              mast.position.set(20 + gx, gy, 2.7);
+              groups.SUR.add(mast);
+            }});
+            // Horizontal portal boom spanning across tracks
+            const boom = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.22, 0.25), oheGantryMat);
+            boom.position.set(20, gy, 5.3);
+            groups.SUR.add(boom);
+
+            // Drop arms and porcelain insulators
+            [18.2, 21.8].forEach(wx => {{
+              const dropArm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 6), pylonMat);
+              dropArm.rotateX(Math.PI / 2);
+              dropArm.position.set(wx, gy, 5.0);
+              groups.SUR.add(dropArm);
+            }});
+          }});
+
+          // Continuous overhead copper contact wire (Z = 4.8m)
+          const wireMat = new THREE.MeshStandardMaterial({{ color: 0xb45309, metalness: 0.9, roughness: 0.2 }});
+          [18.2, 21.8].forEach(wx => {{
+            const oheWire = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 54, 6), wireMat);
+            oheWire.rotateZ(Math.PI / 2);
+            oheWire.position.set(wx, 19, 4.8);
+            groups.SUR.add(oheWire);
+          }});
+
+          // High-Fidelity 12-Car Mumbai Suburban Local EMU Train (stopped at Platform on Track 1)
+          const emuBodyMat = new THREE.MeshStandardMaterial({{ color: 0x6b21a8, roughness: 0.3 }});
+          const emuWhiteMat = new THREE.MeshStandardMaterial({{ color: 0xf8fafc, roughness: 0.4 }});
+          const emuGlassMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1, metalness: 0.8 }});
+          const emuBogieMat = new THREE.MeshStandardMaterial({{ color: 0x0f172a, roughness: 0.9 }});
+
+          const coaches = [
+            {{ y: 11, isCab: false }},
+            {{ y: 19, isCab: false }},
+            {{ y: 27, isCab: true }}
           ];
 
-          quads.forEach(q => {{
-            for (let f = 3; f <= 7; f++) {{
-              const zMin = 10 + (f - 3) * 4.8;
-              const zMax = zMin + 4.8;
-              createPrism(`BLD_${{q.id}}_F0${{f}}`, q.poly, zMin, zMax, q.clr, 0.86, "BLD", f, {{
-                name: `${{q.name}} (Level 0${{f}})`,
-                ulpin: `${{data.base_ulpin}}-BLD-F0${{f}}-${{q.id}}01-M`,
-                z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-                area: "144 m²",
-                vol: "691 m³",
-                owner: q.owner,
-                val: "₹ 24.5 Cr"
+          coaches.forEach(c => {{
+            const coachMesh = new THREE.Mesh(new THREE.BoxGeometry(2.3, 7.2, 2.4), emuBodyMat);
+            coachMesh.position.set(18.2, c.y, 1.8);
+            groups.SUR.add(coachMesh);
+
+            const stripeMesh = new THREE.Mesh(new THREE.BoxGeometry(2.32, 7.2, 1.1), emuWhiteMat);
+            stripeMesh.position.set(18.2, c.y, 2.3);
+            groups.SUR.add(stripeMesh);
+
+            [-1.17, 1.17].forEach(wx => {{
+              const win = new THREE.Mesh(new THREE.BoxGeometry(0.04, 6.2, 0.65), emuGlassMat);
+              win.position.set(18.2 + wx, c.y, 2.3);
+              groups.SUR.add(win);
+            }});
+
+            [-2.4, 2.4].forEach(by => {{
+              const bogie = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.6, 0.45), emuBogieMat);
+              bogie.position.set(18.2, c.y + by, 0.6);
+              groups.SUR.add(bogie);
+            }});
+
+            if (c.isCab) {{
+              const cabNose = new THREE.Mesh(new THREE.BoxGeometry(2.28, 0.8, 2.1), emuWhiteMat);
+              cabNose.position.set(18.2, c.y + 3.8, 1.7);
+              groups.SUR.add(cabNose);
+
+              const cabGlass = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.1, 0.8), emuGlassMat);
+              cabGlass.position.set(18.2, c.y + 4.22, 2.2);
+              cabGlass.rotation.x = -0.2;
+              groups.SUR.add(cabGlass);
+
+              const headMat = new THREE.MeshBasicMaterial({{ color: 0xfef08a }});
+              [-0.6, 0.6].forEach(hx => {{
+                const hl = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), headMat);
+                hl.position.set(18.2 + hx, c.y + 4.25, 1.3);
+                groups.SUR.add(hl);
               }});
+
+              // Raised Diamond Pantograph touching OHE contact wire
+              const pantoMat = new THREE.MeshStandardMaterial({{ color: 0xef4444, metalness: 0.9 }});
+              const pantoBase = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 0.1), pantoMat);
+              pantoBase.position.set(18.2, c.y + 1.5, 3.05);
+              groups.SUR.add(pantoBase);
+
+              const pantoArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.8, 6), pantoMat);
+              pantoArm1.position.set(18.2, c.y + 1.2, 3.8);
+              pantoArm1.rotation.x = 0.45;
+              groups.SUR.add(pantoArm1);
+
+              const pantoArm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.8, 6), pantoMat);
+              pantoArm2.position.set(18.2, c.y + 1.8, 4.4);
+              pantoArm2.rotation.x = -0.45;
+              groups.SUR.add(pantoArm2);
+
+              const pantoHead = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 0.06), pantoMat);
+              pantoHead.position.set(18.2, c.y + 1.5, 4.8);
+              groups.SUR.add(pantoHead);
             }}
           }});
 
-          // 5. Connecting Elevated Glass Skybridges between Towers
-          createPrism("BLD_SKYWALK_NORTH", [[17,26],[23,26],[23,30],[17,30]], 20, 24, 0x38bdf8, 0.8, "COM", 5, {{
-            name: "Connecting Skybridge Galleria North (Tower 1 to 2)",
+          // -----------------------------------------------------------------
+          // 3. FOUR ARTICULATED COMMERCIAL OFFICE TOWERS (Z = 12.0m to 40.8m)
+          // -----------------------------------------------------------------
+          const polyT1 = [[4, 23], [15, 23], [17, 25], [17, 36.5], [15, 38], [4, 38]];
+          const polyT2 = [[23, 25], [25, 23], [36, 23], [36, 38], [25, 38], [23, 36.5]];
+          const polyT3 = [[4, 6], [15, 6], [17, 8], [17, 19], [15, 21], [4, 21]];
+          const polyT4 = [[23, 8], [25, 6], [36, 6], [36, 21], [25, 21], [23, 19]];
+
+          const towers = [
+            {{
+              id: "T1",
+              name: "Grand Central Tower 1 (Airspace IT Hub)",
+              poly: polyT1,
+              clr: 0x0369a1,
+              tenants: [
+                "LTIMindtree Cloud Innovation Hub",
+                "LTIMindtree Enterprise Solutions & R&D",
+                "Cognizant Digital Business Operations",
+                "Tech Mahindra AI & Autonomous Systems",
+                "Cisco Systems Cloud Networking Center",
+                "Executive Boardrooms & Panoramic Sky Suite"
+              ]
+            }},
+            {{
+              id: "T2",
+              name: "Grand Central Tower 2 (Engineering & Infrastructure)",
+              poly: polyT2,
+              clr: 0x38bdf8,
+              tenants: [
+                "Jacobs Engineering Global Delivery Unit",
+                "Jacobs Infrastructure Design Studio",
+                "Mott MacDonald Engineering Consultants",
+                "Arup Sustainable Technologies Hub",
+                "Fluor Daniel EPC Projects Center",
+                "Executive C-Suite & Helipad Lounge"
+              ]
+            }},
+            {{
+              id: "T3",
+              name: "Grand Central Tower 3 (Global Financial Services)",
+              poly: polyT3,
+              clr: 0x0284c7,
+              tenants: [
+                "BNP Paribas India Solutions (Retail Banking)",
+                "BNP Paribas Global Securities & Custody",
+                "SBI Capital Markets Investment Banking",
+                "HDFC Bank Corporate Treasury Center",
+                "Barclays Global Shared Services",
+                "Private Wealth Client Suites & Sky Deck"
+              ]
+            }},
+            {{
+              id: "T4",
+              name: "Grand Central Tower 4 (Multinational Headquarters)",
+              poly: polyT4,
+              clr: 0x0ea5e9,
+              tenants: [
+                "Siemens Smart Infrastructure India HQ",
+                "Siemens Healthcare Diagnostics Labs",
+                "Tata AIG General Insurance Corporate HQ",
+                "Philips Healthcare Innovation Hub",
+                "Schneider Electric Digital Energy",
+                "Corporate Auditorium & Panoramic Lounge"
+              ]
+            }}
+          ];
+
+          // Build 6 Storeys per Tower (Floors 3 to 8, from 12.0m to 40.8m)
+          towers.forEach(t => {{
+            for (let f = 3; f <= 8; f++) {{
+              const zMin = 12.0 + (f - 3) * 4.8;
+              const zMax = zMin + 4.8;
+              const lvl = `F0${{f}}`;
+              const tenantName = t.tenants[f - 3] || `${{t.name}} Level ${{f}}`;
+
+              createPrism(`BLD_${{t.id}}_${{lvl}}`, t.poly, zMin, zMax, t.clr, 0.88, "BLD", f, {{
+                name: `${{t.name}} - ${{tenantName}} (${{lvl}})`,
+                ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-${{t.id}}01-M`,
+                z: `+${{zMin.toFixed(1)}}m to +${{zMax.toFixed(1)}}m`,
+                area: "148 m²",
+                vol: "710 m³",
+                owner: tenantName,
+                val: `₹ ${{(32.0 + f * 2.5).toFixed(1)}} Cr`
+              }});
+
+              // Horizontal Aluminum Spandrel Band at each floor slab
+              const spandrelMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.85, roughness: 0.2 }});
+              const tCenter = t.id === "T1" ? [10.5, 30.5] : t.id === "T2" ? [29.5, 30.5] : t.id === "T3" ? [10.5, 13.5] : [29.5, 13.5];
+              const spandrel = new THREE.Mesh(new THREE.BoxGeometry(12.8, 14.8, 0.35), spandrelMat);
+              spandrel.position.set(tCenter[0], tCenter[1], zMin + 0.2);
+              groups.BLD.add(spandrel);
+            }}
+          }});
+
+          // -----------------------------------------------------------------
+          // 4. SUSPENDED STRUCTURAL STEEL-TRUSS SKYBRIDGES (Z = 22.0m to 26.5m)
+          // -----------------------------------------------------------------
+          createPrism("BLD_SKYWALK_NORTH", [[17, 28], [23, 28], [23, 32], [17, 32]], 22.0, 26.5, 0x38bdf8, 0.82, "COM", 5, {{
+            name: "Connecting Skybridge Galleria North (Tower 1 to Tower 2)",
             ulpin: `${{data.base_ulpin}}-COM-F05-SBN1-6`,
-            z: "+20.0m to +24.0m",
+            z: "+22.0m to +26.5m",
             area: "24 m²",
-            vol: "96 m³",
-            owner: "Seawoods Common Facilities Custodian",
-            val: "₹ 12.0 Cr"
+            vol: "108 m³",
+            owner: "Seawoods Grand Central Common Facilities Custodian",
+            val: "₹ 18.0 Cr"
           }});
 
-          createPrism("BLD_SKYWALK_SOUTH", [[17,10],[23,10],[23,14],[17,14]], 20, 24, 0x38bdf8, 0.8, "COM", 5, {{
-            name: "Connecting Skybridge Galleria South (Tower 3 to 4)",
+          createPrism("BLD_SKYWALK_SOUTH", [[17, 11], [23, 11], [23, 15], [17, 15]], 22.0, 26.5, 0x38bdf8, 0.82, "COM", 5, {{
+            name: "Connecting Skybridge Galleria South (Tower 3 to Tower 4)",
             ulpin: `${{data.base_ulpin}}-COM-F05-SBS1-7`,
-            z: "+20.0m to +24.0m",
+            z: "+22.0m to +26.5m",
             area: "24 m²",
-            vol: "96 m³",
-            owner: "Seawoods Common Facilities Custodian",
-            val: "₹ 12.0 Cr"
+            vol: "108 m³",
+            owner: "Seawoods Grand Central Common Facilities Custodian",
+            val: "₹ 18.0 Cr"
           }});
 
-          // 6. Subsurface Commuter Park-and-Ride Basements (-15m to 0m)
-          createPrism("SUB_BASE", [[5,5],[35,5],[35,35],[5,35]], -15, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "Seawoods Commuter Park-and-Ride & Infrastructure Vault",
-            ulpin: `${{data.base_ulpin}}-SUB-B02-SW01-7`,
-            z: "-15.0m to 0.0m",
-            area: "900 m²",
-            vol: "13500 m³",
+          // Exposed Warren Diagonal Steel Truss Framing on Skybridges
+          const trussMat = new THREE.MeshStandardMaterial({{ color: 0x0f172a, metalness: 0.9, roughness: 0.2 }});
+          [13, 30].forEach(bridgeY => {{
+            for (let tx = 17.5; tx <= 22.5; tx += 1.5) {{
+              const diag1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4.6, 6), trussMat);
+              diag1.position.set(tx, bridgeY - 1.95, 24.25);
+              diag1.rotation.z = 0.65;
+              groups.BLD.add(diag1);
+
+              const diag2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4.6, 6), trussMat);
+              diag2.position.set(tx, bridgeY + 1.95, 24.25);
+              diag2.rotation.z = -0.65;
+              groups.BLD.add(diag2);
+            }}
+          }});
+
+          // -----------------------------------------------------------------
+          // 5. ROOFTOP ARCHITECTURAL MEP, HELIPAD & GREEN TECH (Z = 40.8m to 52m)
+          // -----------------------------------------------------------------
+          // Tower 1 Roof: Industrial HVAC Cooling Towers & BMU Crane
+          const ctMat = new THREE.MeshStandardMaterial({{ color: 0x334155, roughness: 0.7 }});
+          [[8.5, 28], [12.5, 28]].forEach(([cx, cy]) => {{
+            const ct = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 2.2, 16), ctMat);
+            ct.rotateX(Math.PI / 2);
+            ct.position.set(cx, cy, 41.9);
+            groups.AIR.add(ct);
+          }});
+          const bmuBase = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), new THREE.MeshStandardMaterial({{ color: 0x475569 }}));
+          bmuBase.position.set(10.5, 34, 41.4);
+          groups.AIR.add(bmuBase);
+          const bmuBoom = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.25, 0.25), new THREE.MeshStandardMaterial({{ color: 0xfacc15 }}));
+          bmuBoom.position.set(8.5, 34, 42.2);
+          groups.AIR.add(bmuBoom);
+
+          // Tower 2 Roof: Official Corporate Helipad (13m diameter)
+          const heliBase = new THREE.Mesh(new THREE.CylinderGeometry(6.2, 6.2, 0.4, 32), new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.9 }}));
+          heliBase.rotateX(Math.PI / 2);
+          heliBase.position.set(29.5, 30.5, 41.0);
+          groups.AIR.add(heliBase);
+
+          const ringMesh = new THREE.Mesh(new THREE.RingGeometry(3.8, 4.4, 32), new THREE.MeshBasicMaterial({{ color: 0xfacc15, side: THREE.DoubleSide }}));
+          ringMesh.position.set(29.5, 30.5, 41.22);
+          groups.AIR.add(ringMesh);
+
+          const hMat = new THREE.MeshBasicMaterial({{ color: 0xffffff }});
+          const hBar1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.8, 0.04), hMat);
+          hBar1.position.set(28.4, 30.5, 41.25);
+          groups.AIR.add(hBar1);
+          const hBar2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.8, 0.04), hMat);
+          hBar2.position.set(30.6, 30.5, 41.25);
+          groups.AIR.add(hBar2);
+          const hCross = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 0.04), hMat);
+          hCross.position.set(29.5, 30.5, 41.25);
+          groups.AIR.add(hCross);
+
+          for (let ha = 0; ha < Math.PI * 2; ha += Math.PI / 6) {{
+            const hDot = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshBasicMaterial({{ color: 0x22c55e }}));
+            hDot.position.set(29.5 + Math.cos(ha) * 5.9, 30.5 + Math.sin(ha) * 5.9, 41.25);
+            groups.AIR.add(hDot);
+          }}
+
+          // Tower 3 Roof: Heavy-Duty Telecommunications Spire Mast (Z = 41m to 54m)
+          const mastMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.9, roughness: 0.2 }});
+          const commMast = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.55, 13, 12), mastMat);
+          commMast.rotateX(Math.PI / 2);
+          commMast.position.set(10.5, 13.5, 47.3);
+          groups.AIR.add(commMast);
+
+          const dish = new THREE.Mesh(new THREE.SphereGeometry(1.1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({{ color: 0xffffff, metalness: 0.6 }}));
+          dish.position.set(10.5, 12.8, 48.5);
+          dish.rotation.x = Math.PI / 3;
+          groups.AIR.add(dish);
+
+          const bcn1 = new THREE.Mesh(new THREE.SphereGeometry(0.35, 10, 10), new THREE.MeshBasicMaterial({{ color: 0xef4444 }}));
+          bcn1.position.set(10.5, 13.5, 53.8);
+          groups.AIR.add(bcn1);
+
+          // Tower 4 Roof: Solar Photovoltaic Array (4 rows tilted towards South)
+          const solarTex = getSolarPanelTexture();
+          const solarMat = new THREE.MeshStandardMaterial({{ map: solarTex, roughness: 0.2, metalness: 0.8 }});
+          for (let sy = 9.5; sy <= 17.5; sy += 2.5) {{
+            const panelRow = new THREE.Mesh(new THREE.BoxGeometry(10.5, 1.8, 0.12), solarMat);
+            panelRow.position.set(29.5, sy, 41.5);
+            panelRow.rotation.x = 0.32;
+            groups.AIR.add(panelRow);
+          }}
+
+          // -----------------------------------------------------------------
+          // 6. GRAND ENTRANCE PLAZA, ROUNDABOUT & WATER FOUNTAIN (Ground Z = 0)
+          // -----------------------------------------------------------------
+          const roadMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.95 }});
+          const roadLoop = new THREE.Mesh(new THREE.RingGeometry(5.5, 11.5, 32, 1, 0, Math.PI), roadMat);
+          roadLoop.rotation.z = Math.PI;
+          roadLoop.position.set(20, -1.5, 0.02);
+          groups.SUR.add(roadLoop);
+
+          const fRim = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 0.45, 32), new THREE.MeshStandardMaterial({{ color: 0x64748b, roughness: 0.8 }}));
+          fRim.rotateX(Math.PI / 2);
+          fRim.position.set(20, -2.5, 0.22);
+          groups.SUR.add(fRim);
+
+          const fWater = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 0.35, 32), new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.05, transparent: true, opacity: 0.85 }}));
+          fWater.rotateX(Math.PI / 2);
+          fWater.position.set(20, -2.5, 0.3);
+          groups.SUR.add(fWater);
+
+          const fSpray = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.4, 16), new THREE.MeshBasicMaterial({{ color: 0xe0f2fe, transparent: true, opacity: 0.75 }}));
+          fSpray.position.set(20, -2.5, 1.4);
+          fSpray.rotation.x = Math.PI;
+          groups.SUR.add(fSpray);
+
+          [[7, -2], [12, -4], [28, -4], [33, -2], [3, 8], [37, 8]].forEach(([tx, ty]) => {{
+            createPalmTree(tx, ty, 0);
+          }});
+
+          const totemCanvas = document.createElement('canvas');
+          totemCanvas.width = 128; totemCanvas.height = 256;
+          const tctx = totemCanvas.getContext('2d');
+          tctx.fillStyle = '#0f172a'; tctx.fillRect(0, 0, 128, 256);
+          tctx.fillStyle = '#facc15'; tctx.font = 'bold 16px sans-serif'; tctx.textAlign = 'center';
+          tctx.fillText('L&T REALTY', 64, 50);
+          tctx.fillStyle = '#ffffff'; tctx.font = 'bold 18px sans-serif';
+          tctx.fillText('SEAWOODS', 64, 100);
+          tctx.fillText('GRAND', 64, 130);
+          tctx.fillText('CENTRAL', 64, 160);
+          tctx.fillStyle = '#38bdf8'; tctx.font = 'bold 14px sans-serif';
+          tctx.fillText('TOD STATION', 64, 210);
+          const totemTex = new THREE.CanvasTexture(totemCanvas);
+          const totemMesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 4.2), new THREE.MeshStandardMaterial({{ map: totemTex }}));
+          totemMesh.position.set(13, -1.0, 2.1);
+          groups.SUR.add(totemMesh);
+
+          // -----------------------------------------------------------------
+          // 7. MULTI-LEVEL SUBSURFACE COMMUTER BASEMENTS (Z = -15m to 0m)
+          // -----------------------------------------------------------------
+          createPrism("SUB_B1_CONCOURSE", [[3, 3], [37, 3], [37, 37], [3, 37]], -5, 0, 0xf59e0b, 0.88, "SUB", -1, {{
+            name: "Seawoods Commuter Ticket Concourse, Smart AFC Gates & Station Portals (Level B1)",
+            ulpin: `${{data.base_ulpin}}-SUB-B01-TC01-M`,
+            z: "-5.0m to 0.0m",
+            area: "1156 m²",
+            vol: "5780 m³",
+            owner: "CIDCO & Central Railway Joint Concourse SPV",
+            val: "₹ 340 Cr"
+          }});
+
+          createPrism("SUB_B2_PARKING", [[3, 3], [37, 3], [37, 37], [3, 37]], -10, -5, 0xd97706, 0.88, "SUB", -2, {{
+            name: "CIDCO 1500-Vehicle Commuter Park-and-Ride Automated Facility (Level B2)",
+            ulpin: `${{data.base_ulpin}}-SUB-B02-PR01-8`,
+            z: "-10.0m to -5.0m",
+            area: "1156 m²",
+            vol: "5780 m³",
             owner: "CIDCO Urban Infrastructure Authority (Park-and-Ride)",
-            val: "₹ 210 Cr"
+            val: "₹ 260 Cr"
+          }});
+
+          const pillarMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, roughness: 0.9 }});
+          for (let px = 7; px <= 33; px += 6.5) {{
+            for (let py = 7; py <= 33; py += 6.5) {{
+              const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 5.0), pillarMat);
+              pillar.position.set(px, py, -7.5);
+              groups.SUB.add(pillar);
+            }}
+          }}
+
+          createPrism("SUB_B3_UTILITY", [[3, 3], [37, 3], [37, 37], [3, 37]], -15, -10, 0xb45309, 0.92, "SUB", -3, {{
+            name: "Central Railway Traction Substation & District Chilled Water Plant (Level B3)",
+            ulpin: `${{data.base_ulpin}}-SUB-B03-UT01-4`,
+            z: "-15.0m to -10.0m",
+            area: "1156 m²",
+            vol: "5780 m³",
+            owner: "Central Railway Electrification & CIDCO MEP Directorate",
+            val: "₹ 410 Cr"
           }});
         }}
 
@@ -1829,279 +2696,1073 @@ def render_3d_digital_twin_component(
           }});
         }}
 
-        // ARCHETYPE 8: Subterranean Multilevel Cavern (Rajiv Chowk, BKC Metro-3, Chennai Central, Cubbon Park)
+        // ARCHETYPE 8: Subterranean Multilevel Cavern (Rajiv Chowk, BKC Metro-3, Cubbon Park, Chennai Central)
         function buildSubterraneanCavern(data) {{
-          // Street Level Minimalist Glass Pavilion (0 to 4m)
-          createPrism("SUR_ENTRANCE", [[14,14],[26,14],[26,26],[14,26]], 0, 4, 0x38bdf8, 0.7, "BLD", 0, {{
-            name: "Surface Metro Entry Pavilion & Escalator Plazas",
+          // 1. Surface Level Plaza & Iconic Metro Glass Pyramid / Pavilion (Z = 0.0 to 4.5m)
+          // Surface Plaza Granite Pavement
+          const plazaGeo = new THREE.BoxGeometry(36, 36, 0.2);
+          const plazaMat = new THREE.MeshStandardMaterial({{ color: 0x334155, roughness: 0.85 }});
+          const plaza = new THREE.Mesh(plazaGeo, plazaMat);
+          plaza.position.set(20, 20, 0.1);
+          groups.SUR.add(plaza);
+
+          // Surface Metro Entry Pavilion (Steel Frame & High-Translucency Glass)
+          createPrism("SUR_ENTRANCE", [[12, 12], [28, 12], [28, 28], [12, 28]], 0, 4.5, 0x38bdf8, 0.72, "BLD", 0, {{
+            name: `Surface Metro Transit Pavilion & Entry Portals (${{data.name}})`,
             ulpin: `${{data.base_ulpin}}-SUR-G00-EN01-2`,
-            z: "0.0m to +4.0m",
-            area: "144 m²",
-            vol: "576 m³",
+            z: "0.0m to +4.5m",
+            area: "256 m²",
+            vol: "1152 m³",
             owner: data.owner,
-            val: "₹ 45.0 Cr"
+            val: "₹ 55.0 Cr"
           }});
 
-          // Level B1: Ticket Hall, Smart AFC Gates & Retail Concourse (-7 to 0m)
-          createPrism("SUB_B1_CONCOURSE", [[5,5],[35,5],[35,35],[5,35]], -7, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "Subsurface Concourse, AFC Smart Gates & Ticketing Hall (Level B1)",
+          // Angular Space-Frame Steel Roof Truss on Entrance Pavilion
+          const pRoofGeo = new THREE.ConeGeometry(12, 3.2, 4);
+          pRoofGeo.rotateZ(Math.PI / 4);
+          pRoofGeo.rotateX(Math.PI / 2);
+          const pRoofMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, transparent: true, opacity: 0.65, roughness: 0.2 }});
+          const pRoof = new THREE.Mesh(pRoofGeo, pRoofMat);
+          pRoof.position.set(20, 20, 5.8);
+          groups.BLD.add(pRoof);
+
+          // Station Identification Totem Monolith (Bilingual Station Signage)
+          const isDelhi = data.name && data.name.includes("Rajiv");
+          const isMumbai = data.name && data.name.includes("BKC");
+          const stationHi = isDelhi ? "राजीव चौक" : (isMumbai ? "बीकेसी मेट्रो" : "मेट्रो स्थानक");
+          const stationEn = isDelhi ? "RAJIV CHOWK • INTERCHANGE" : (isMumbai ? "BKC METRO-3 • AQUA LINE" : (data.name.toUpperCase()));
+          createStationSignboard(stationHi, stationEn, 20, 9.5, 2.2, 0);
+
+          // Surface Escalator Portal Descent Ramp (Angled Void into B1)
+          const escMat = new THREE.MeshStandardMaterial({{ color: 0x64748b, metalness: 0.8, roughness: 0.3 }});
+          const esc1 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 7.5, 0.3), escMat);
+          esc1.rotation.x = Math.PI / 6;
+          esc1.position.set(16.5, 16.5, 1.2);
+          groups.BLD.add(esc1);
+          const esc2 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 7.5, 0.3), escMat);
+          esc2.rotation.x = Math.PI / 6;
+          esc2.position.set(23.5, 16.5, 1.2);
+          groups.BLD.add(esc2);
+
+          // Surface Ventilation & Smoke Extraction Shafts (Dual Louvered Concrete Towers)
+          [6, 34].forEach(vx => {{
+            const vGeo = new THREE.BoxGeometry(3.2, 3.2, 3.8);
+            const vMat = new THREE.MeshStandardMaterial({{ color: 0x475569, roughness: 0.7 }});
+            const vMesh = new THREE.Mesh(vGeo, vMat);
+            vMesh.position.set(vx, 32, 1.9);
+            groups.AIR.add(vMesh);
+
+            // Louver grill texture lines
+            const grill = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.1, 2.2), new THREE.MeshBasicMaterial({{ color: 0x0f172a }}));
+            grill.position.set(vx, 30.3, 2.0);
+            groups.AIR.add(grill);
+          }});
+
+          // Public Plaza Amenities: Bike Racks, Bollards & Trees
+          const bMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.9 }});
+          for (let bx = 8; bx <= 32; bx += 4) {{
+            const bol = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.9, 12), bMat);
+            bol.position.set(bx, 5.5, 0.45);
+            bol.rotation.x = Math.PI / 2;
+            groups.SUR.add(bol);
+          }}
+
+          // 2. Level B1: Grand Ticketing Concourse, Retail Arcade & Smart AFC Flap Gates (Z = -7.0m to 0.0m)
+          createPrism("SUB_B1_CONCOURSE", [[4, 4], [36, 4], [36, 36], [4, 36]], -7, 0, 0xf59e0b, 0.85, "SUB", -1, {{
+            name: "Subsurface Concourse, AFC Smart Gates & Retail Arcade (Level B1)",
             ulpin: `${{data.base_ulpin}}-SUB-B01-TC01-M`,
             z: "-7.0m to 0.0m",
-            area: "900 m²",
-            vol: "6300 m³",
+            area: "1024 m²",
+            vol: "7168 m³",
             owner: data.owner,
-            val: "₹ 280 Cr"
+            val: "₹ 290 Cr"
           }});
 
-          // Level B2: Traction Power, Ventilation & Signal Interlocking (-15 to -7m)
-          createPrism("SUB_B2_PLANT", [[7,7],[33,7],[33,33],[7,33]], -15, -7, 0xd97706, 0.85, "SUB", -2, {{
+          // Row of Smart Automatic Fare Collection (AFC) Flap Turnstiles (8 Gates)
+          const afcMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, metalness: 0.7, roughness: 0.3 }});
+          const flapGreen = new THREE.MeshBasicMaterial({{ color: 0x22c55e }});
+          for (let gx = 10; gx <= 30; gx += 2.8) {{
+            const afcGate = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.8, 1.2), afcMat);
+            afcGate.position.set(gx, 20, -3.5);
+            groups.SUB.add(afcGate);
+
+            const flap = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 0.45), flapGreen);
+            flap.position.set(gx, 20, -3.2);
+            groups.SUB.add(flap);
+          }}
+
+          // Security Baggage X-Ray Scanner & Walk-Through Metal Detector (DFMD)
+          const xrayBox = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.2, 1.4), new THREE.MeshStandardMaterial({{ color: 0x334155 }}));
+          xrayBox.position.set(12, 14, -3.5);
+          groups.SUB.add(xrayBox);
+          const dfmd = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.2, 2.2), new THREE.MeshStandardMaterial({{ color: 0x475569 }}));
+          dfmd.position.set(14.2, 14, -3.2);
+          groups.SUB.add(dfmd);
+
+          // Customer Care & Token Recharge Booth
+          const booth = new THREE.Mesh(new THREE.BoxGeometry(4.5, 2.5, 2.2), new THREE.MeshStandardMaterial({{ color: 0x0f172a, roughness: 0.5 }}));
+          booth.position.set(28, 14, -3.5);
+          groups.SUB.add(booth);
+          const boothWin = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.1, 1.0), new THREE.MeshBasicMaterial({{ color: 0x7dd3fc }}));
+          boothWin.position.set(28, 12.7, -3.2);
+          groups.SUB.add(boothWin);
+
+          // Overhead Directional Line Signage
+          const signCanvas = document.createElement('canvas');
+          signCanvas.width = 512; signCanvas.height = 64;
+          const sctx = signCanvas.getContext('2d');
+          sctx.fillStyle = '#0f172a'; sctx.fillRect(0, 0, 512, 64);
+          sctx.fillStyle = '#eab308'; sctx.font = 'bold 20px sans-serif';
+          sctx.fillText('◀ LINE 1: YELLOW LINE', 30, 40);
+          sctx.fillStyle = '#38bdf8';
+          sctx.fillText('LINE 2: BLUE LINE ▶', 310, 40);
+          const sTex = new THREE.CanvasTexture(signCanvas);
+          const oSign = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 1.2), new THREE.MeshBasicMaterial({{ map: sTex }}));
+          oSign.position.set(20, 24, -1.8);
+          groups.SUB.add(oSign);
+
+          // Structural Heavy Concrete Columns
+          const colMat = new THREE.MeshStandardMaterial({{ color: 0x64748b, roughness: 0.9 }});
+          [9, 20, 31].forEach(cx => {{
+            [9, 31].forEach(cy => {{
+              const col = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 7.0), colMat);
+              col.position.set(cx, cy, -3.5);
+              groups.SUB.add(col);
+            }});
+          }});
+
+          // 3. Level B2: Environmental Control, Traction Substation & Telemetry Vault (Z = -15.0m to -7.0m)
+          createPrism("SUB_B2_PLANT", [[6, 6], [34, 6], [34, 34], [6, 34]], -15, -7, 0xd97706, 0.88, "SUB", -2, {{
             name: "Environmental Control, Traction Power & Signal Interlocking Vault (Level B2)",
             ulpin: `${{data.base_ulpin}}-SUB-B02-PL01-8`,
             z: "-15.0m to -7.0m",
-            area: "676 m²",
-            vol: "5408 m³",
+            area: "784 m²",
+            vol: "6272 m³",
             owner: data.owner,
-            val: "₹ 210 Cr"
+            val: "₹ 230 Cr"
           }});
 
-          // Level B3: Island Passenger Platform & Running Tracks (-24 to -15m)
-          createPrism("SUB_B3_PLATFORM", [[13,5],[27,5],[27,35],[13,35]], -24, -15, 0xb45309, 0.92, "SUB", -3, {{
+          // Large Industrial Tunnel Ventilation Fans (TVF - Dual Ducted Axial Fans)
+          [13, 27].forEach(fx => {{
+            const fanGeo = new THREE.CylinderGeometry(1.6, 1.6, 4.5, 24);
+            fanGeo.rotateZ(Math.PI / 2);
+            const fan = new THREE.Mesh(fanGeo, new THREE.MeshStandardMaterial({{ color: 0x334155, metalness: 0.8, roughness: 0.3 }}));
+            fan.position.set(fx, 30, -11.0);
+            groups.SUB.add(fan);
+
+            const fanHub = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 4.6, 16), new THREE.MeshBasicMaterial({{ color: 0xfacc15 }}));
+            fanHub.rotateZ(Math.PI / 2);
+            fanHub.position.set(fx, 30, -11.0);
+            groups.SUB.add(fanHub);
+          }});
+
+          // 25kV Traction Power Transformer Units with Safety Enclosures
+          const tr1 = new THREE.Mesh(new THREE.BoxGeometry(5.0, 3.5, 3.2), new THREE.MeshStandardMaterial({{ color: 0x475569, roughness: 0.6 }}));
+          tr1.position.set(12, 12, -11.0);
+          groups.SUB.add(tr1);
+          const trWarn = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 0.8), new THREE.MeshBasicMaterial({{ color: 0xef4444 }}));
+          trWarn.position.set(12, 10.2, -11.0);
+          groups.SUB.add(trWarn);
+
+          // SCADA Telemetry & Signal Interlocking Server Racks
+          for (let rx = 22; rx <= 30; rx += 2.2) {{
+            const rack = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.8, 4.0), new THREE.MeshStandardMaterial({{ color: 0x0f172a, roughness: 0.4 }}));
+            rack.position.set(rx, 12, -11.0);
+            groups.SUB.add(rack);
+
+            const leds = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.3), new THREE.MeshBasicMaterial({{ color: 0x22c55e }}));
+            leds.position.set(rx, 10.55, -10.0);
+            groups.SUB.add(leds);
+          }}
+
+          // 4. Level B3: Deep Passenger Island Platform & Dual Running Tracks (Z = -24.0m to -15.0m)
+          createPrism("SUB_B3_PLATFORM", [[13, 4], [27, 4], [27, 36], [13, 36]], -24, -15, 0xb45309, 0.94, "SUB", -3, {{
             name: "Underground Passenger Island Platform & Dual Track Slabs (Level B3)",
             ulpin: `${{data.base_ulpin}}-SUB-B03-PF01-4`,
             z: "-24.0m to -15.0m",
-            area: "420 m²",
-            vol: "3780 m³",
+            area: "448 m²",
+            vol: "4032 m³",
             owner: data.owner,
-            val: "₹ 350 Cr"
+            val: "₹ 380 Cr"
           }});
 
-          // Twin Metro Running Tunnels with Railway Tracks
-          [-1, 1].forEach(side => {{
-            const tGeo = new THREE.CylinderGeometry(2.8, 2.8, 52, 24);
-            tGeo.rotateZ(Math.PI / 2);
-            const tMat = new THREE.MeshStandardMaterial({{ color: 0xec4899, roughness: 0.3, transparent: true, opacity: 0.9 }});
-            const tMesh = new THREE.Mesh(tGeo, tMat);
-            tMesh.position.set(20, 20 + (side * 14), -19.5);
-            groups.UTL.add(tMesh);
-            meshMap.set(`UTL_TUBE_${{side}}`, tMesh);
+          // Platform Yellow Tactile Edge Warning Strips
+          const tacMat = new THREE.MeshBasicMaterial({{ color: 0xfacc15 }});
+          const tacW = new THREE.Mesh(new THREE.BoxGeometry(0.35, 32, 0.1), tacMat);
+          tacW.position.set(13.2, 20, -18.9);
+          groups.SUB.add(tacW);
+          const tacE = new THREE.Mesh(new THREE.BoxGeometry(0.35, 32, 0.1), tacMat);
+          tacE.position.set(26.8, 20, -18.9);
+          groups.SUB.add(tacE);
 
-            // Internal Rails
-            const rGeo = new THREE.BoxGeometry(50, 0.25, 0.2);
-            const rMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.8 }});
-            const rMesh = new THREE.Mesh(rGeo, rMat);
-            rMesh.position.set(20, 20 + (side * 14), -21.0);
-            groups.UTL.add(rMesh);
+          // Platform Screen Doors (PSDs - Full-Height Glazed Safety Wall)
+          const psdMat = new THREE.MeshStandardMaterial({{ color: 0x38bdf8, transparent: true, opacity: 0.45, roughness: 0.1 }});
+          const psdW = new THREE.Mesh(new THREE.BoxGeometry(0.15, 32, 2.6), psdMat);
+          psdW.position.set(13.0, 20, -17.6);
+          groups.SUB.add(psdW);
+          const psdE = new THREE.Mesh(new THREE.BoxGeometry(0.15, 32, 2.6), psdMat);
+          psdE.position.set(27.0, 20, -17.6);
+          groups.SUB.add(psdE);
+
+          // Dual Running Tunnels with Concrete Trackbed & Steel Rails
+          const trackX = [8.5, 31.5];
+          trackX.forEach((tx, idx) => {{
+            // Circular bored tunnel sleeve
+            const tGeo = new THREE.CylinderGeometry(3.6, 3.6, 44, 28);
+            tGeo.rotateX(Math.PI / 2);
+            const tMat = new THREE.MeshStandardMaterial({{ color: 0xec4899, roughness: 0.4, transparent: true, opacity: 0.75 }});
+            const tMesh = new THREE.Mesh(tGeo, tMat);
+            tMesh.position.set(tx, 20, -20.2);
+            groups.UTL.add(tMesh);
+            meshMap.set(`UTL_TUBE_${{idx}}`, tMesh);
+
+            // Concrete trackbed slab
+            const bed = new THREE.Mesh(new THREE.BoxGeometry(3.2, 42, 0.4), new THREE.MeshStandardMaterial({{ color: 0x475569 }}));
+            bed.position.set(tx, 20, -22.5);
+            groups.UTL.add(bed);
+
+            // Steel running rails
+            const rMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.95, roughness: 0.2 }});
+            const r1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 42, 0.2), rMat);
+            r1.position.set(tx - 0.72, 20, -22.2);
+            groups.UTL.add(r1);
+            const r2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 42, 0.2), rMat);
+            r2.position.set(tx + 0.72, 20, -22.2);
+            groups.UTL.add(r2);
+
+            // 25kV Overhead Rigid Catenary Conductor Rail (ROCS) on Ceiling
+            const rocs = new THREE.Mesh(new THREE.BoxGeometry(0.25, 42, 0.3), new THREE.MeshStandardMaterial({{ color: 0xf59e0b, metalness: 0.8 }}));
+            rocs.position.set(tx, 20, -16.8);
+            groups.UTL.add(rocs);
+          }});
+
+          // Detailed 4-Coach Modern Underground Metro Train on West Track
+          const trainX = 8.5;
+          const coachMat = new THREE.MeshStandardMaterial({{ color: 0xf1f5f9, metalness: 0.85, roughness: 0.25 }});
+          const lineStripeMat = new THREE.MeshBasicMaterial({{ color: isDelhi ? 0xeab308 : (isMumbai ? 0x06b6d4 : 0xa855f7) }});
+          const winMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1 }});
+
+          [-12, -4, 4, 12].forEach((cy, cIdx) => {{
+            // Main Coach Body
+            const coach = new THREE.Mesh(new THREE.BoxGeometry(2.6, 7.2, 2.5), coachMat);
+            coach.position.set(trainX, 20 + cy, -20.2);
+            groups.UTL.add(coach);
+
+            // Route Colour Livery Band
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.64, 7.25, 0.4), lineStripeMat);
+            stripe.position.set(trainX, 20 + cy, -20.6);
+            groups.UTL.add(stripe);
+
+            // Windows
+            const wL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 6.2, 0.8), winMat);
+            wL.position.set(trainX - 1.32, 20 + cy, -19.8);
+            groups.UTL.add(wL);
+            const wR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 6.2, 0.8), winMat);
+            wR.position.set(trainX + 1.32, 20 + cy, -19.8);
+            groups.UTL.add(wR);
+
+            // Roof HVAC Pod
+            const hvac = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.35), new THREE.MeshStandardMaterial({{ color: 0x64748b }}));
+            hvac.position.set(trainX, 20 + cy, -18.8);
+            groups.UTL.add(hvac);
+
+            // Front driving cab nose & headlights on lead coach
+            if (cIdx === 3) {{
+              const cabNose = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 1.8), new THREE.MeshStandardMaterial({{ color: 0x0f172a }}));
+              cabNose.position.set(trainX, 20 + cy + 3.8, -20.2);
+              groups.UTL.add(cabNose);
+
+              const hl1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({{ color: 0xfef08a }}));
+              hl1.position.set(trainX - 0.7, 20 + cy + 4.2, -20.8);
+              groups.UTL.add(hl1);
+              const hl2 = hl1.clone();
+              hl2.position.set(trainX + 0.7, 20 + cy + 4.2, -20.8);
+              groups.UTL.add(hl2);
+            }}
           }});
         }}
 
         // ARCHETYPE 9: Hooghly Underwater Subsurface Corridor (Kolkata) - India's 1st Under-River Metro
         function buildUnderwaterShieldTunnel(data) {{
-          // 1. Translucent Navigable River Water Surface (-2m to 0m)
+          // 1. Translucent Navigable Hooghly River Water Surface (Z = -2.0m to 0.0m)
           const wGeo = new THREE.PlaneGeometry(64, 64);
-          const wMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, transparent: true, opacity: 0.45, roughness: 0.05 }});
+          const wMat = new THREE.MeshStandardMaterial({{
+            color: 0x0284c7,
+            transparent: true,
+            opacity: 0.5,
+            roughness: 0.08,
+            metalness: 0.3
+          }});
           const wMesh = new THREE.Mesh(wGeo, wMat);
           wMesh.position.set(20, 20, -1.0);
           groups.SUR.add(wMesh);
 
-          // River Channel Fairway Marker Buoys
-          [-12, 12].forEach(bx => {{
-            const bGeo = new THREE.CylinderGeometry(0.6, 0.6, 1.2, 12);
+          // River Channel Fairway Marker Buoys (Starboard Green & Port Red)
+          const buoyData = [
+            {{ x: 8, y: 20, clr: 0x22c55e, name: "Starboard Channel Fairway Buoy" }},
+            {{ x: 32, y: 20, clr: 0xef4444, name: "Port Channel Fairway Buoy" }}
+          ];
+          buoyData.forEach(b => {{
+            const bGeo = new THREE.CylinderGeometry(0.6, 0.8, 1.4, 16);
             bGeo.rotateX(Math.PI / 2);
-            const bMesh = new THREE.Mesh(bGeo, new THREE.MeshStandardMaterial({{ color: 0x10b981 }}));
-            bMesh.position.set(20 + bx, 20, 0.2);
+            const bMesh = new THREE.Mesh(bGeo, new THREE.MeshStandardMaterial({{ color: b.clr, roughness: 0.4 }}));
+            bMesh.position.set(b.x, b.y, 0.1);
             groups.SUR.add(bMesh);
+
+            // Solar flashing LED lantern on top
+            const lGeo = new THREE.SphereGeometry(0.2, 8, 8);
+            const lMesh = new THREE.Mesh(lGeo, new THREE.MeshBasicMaterial({{ color: b.clr }}));
+            lMesh.position.set(b.x, b.y, 1.1);
+            groups.SUR.add(lMesh);
           }});
 
-          // 2. Subaqueous Alluvial Silt Strata (Riverbed Sediment, -14m to -2m)
-          createPrism("GEO_SEDIMENT", [[-2,-2],[42,-2],[42,42],[-2,42]], -14, -2, 0x475569, 0.35, "SUR", 0, {{
-            name: "Subaqueous Alluvial Silt Strata & Geotechnical Surcharge Bed",
+          // Historic Hooghly Passenger Ferry / River Launch Boat cruising on water surface
+          const boatHull = new THREE.Mesh(new THREE.BoxGeometry(4.2, 10.0, 1.4), new THREE.MeshStandardMaterial({{ color: 0xf8fafc, roughness: 0.4 }}));
+          boatHull.position.set(20, 20, 0.2);
+          groups.SUR.add(boatHull);
+
+          const boatCabin = new THREE.Mesh(new THREE.BoxGeometry(3.2, 5.5, 1.2), new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.2 }}));
+          boatCabin.position.set(20, 19.5, 1.3);
+          groups.SUR.add(boatCabin);
+
+          // Indian National Flag at Stern of Ferry
+          const mastPole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.0, 8), new THREE.MeshStandardMaterial({{ color: 0x94a3b8 }}));
+          mastPole.position.set(20, 15.2, 1.8);
+          mastPole.rotateX(Math.PI / 2);
+          groups.SUR.add(mastPole);
+          const flagMesh = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.8, 0.5), new THREE.MeshBasicMaterial({{ color: 0xf97316 }}));
+          flagMesh.position.set(20, 15.6, 2.4);
+          groups.SUR.add(flagMesh);
+
+          // 2. Subaqueous Stratified Geological Strata
+          // Layer 1: Top Alluvial Silt Strata (-12m to -2m)
+          createPrism("GEO_SILT", [[-2, -2], [42, -2], [42, 42], [-2, 42]], -12, -2, 0x475569, 0.38, "SUR", 0, {{
+            name: "Hooghly Alluvial Silt Strata & Riverbed Surcharge Sediment",
             ulpin: `${{data.base_ulpin}}-GEO-G01-ST01-R`,
-            z: "-14.0m to -2.0m",
+            z: "-12.0m to -2.0m",
             area: "1936 m²",
-            vol: "23232 m³",
-            owner: "Kolkata Port Trust & Inland Waterways Authority",
+            vol: "19360 m³",
+            owner: "Kolkata Port Trust & Inland Waterways Authority of India",
             val: "₹ 75.0 Cr"
           }});
 
-          // 3. Deep Mahakaran Station Ventilation & Evacuation Shaft (-28m to +3m)
-          createPrism("UTL_SHAFT", [[15,1],[25,1],[25,8],[15,8]], -28, 3, 0x0ea5e9, 0.85, "UTL", -2, {{
-            name: "Howrah-Mahakaran Riverbank Deep Ventilation & Access Shaft",
+          // Layer 2: Stiff Impermeable Marine Clay Strata (-20m to -12m)
+          createPrism("GEO_CLAY", [[-2, -2], [42, -2], [42, 42], [-2, 42]], -20, -12, 0x334155, 0.45, "SUB", -1, {{
+            name: "Stiff Impermeable Silty Clay Geological Barrier Zone",
+            ulpin: `${{data.base_ulpin}}-GEO-G02-CL01-C`,
+            z: "-20.0m to -12.0m",
+            area: "1936 m²",
+            vol: "15488 m³",
+            owner: "Kolkata Metro Rail Corporation (Geotechnical Reserve)",
+            val: "₹ 95.0 Cr"
+          }});
+
+          // 3. Deep Riverbank Ventilation & Emergency Escape Shaft (-28m to +3m)
+          createPrism("UTL_SHAFT", [[15, 1], [25, 1], [25, 8], [15, 8]], -28, 3, 0x0ea5e9, 0.88, "UTL", -2, {{
+            name: "Howrah-Mahakaran Riverbank Deep Ventilation & Evacuation Shaft",
             ulpin: `${{data.base_ulpin}}-UTL-U02-SH01-M`,
             z: "-28.0m to +3.0m",
             area: "70 m²",
             vol: "2170 m³",
             owner: "Kolkata Metro Rail Corporation (KMRCL)",
-            val: "₹ 120 Cr"
+            val: "₹ 140 Cr"
           }});
 
-          // 4. Twin Circular Bored Shield Tunnels under Riverbed (-28m to -21m, Depth 24m)
+          // 4. Twin Circular Bored Shield Tunnels under Riverbed (-28m to -20m, Depth 24m MSL)
           [-1, 1].forEach(side => {{
-            const tGeo = new THREE.CylinderGeometry(3.0, 3.0, 52, 28);
+            const ty = 20 + (side * 9);
+            const isEast = side > 0;
+            const tGeo = new THREE.CylinderGeometry(3.2, 3.2, 52, 32);
             tGeo.rotateZ(Math.PI / 2);
-            const tMat = new THREE.MeshStandardMaterial({{ color: 0x06b6d4, roughness: 0.2, transparent: true, opacity: 0.92 }});
+            const tMat = new THREE.MeshStandardMaterial({{
+              color: 0x06b6d4,
+              roughness: 0.25,
+              metalness: 0.4,
+              transparent: true,
+              opacity: 0.92
+            }});
             const tMesh = new THREE.Mesh(tGeo, tMat);
-            tMesh.position.set(20, 20 + (side * 8), -24.0);
+            tMesh.position.set(20, ty, -24.0);
             tMesh.userData = {{
-              id: `UTL_HOOGHLY_${{side > 0 ? "EAST" : "WEST"}}`,
+              id: `UTL_HOOGHLY_${{isEast ? "EAST" : "WEST"}}`,
               stratum: "UTL",
               originalZ: -24.0,
               floorIdx: -3,
               baseOpacity: 0.92,
               info: {{
-                name: `Hooghly Subaqueous Shield Tunnel Bore (${{side > 0 ? "Eastbound Track - Howrah to Esplanade" : "Westbound Track - Esplanade to Howrah"}})`,
-                ulpin: `${{data.base_ulpin}}-UTL-U03-HT0${{side > 0 ? 1 : 2}}-K`,
-                z: "-27.0m to -21.0m (Depth 24m MSL)",
+                name: `Hooghly Subaqueous Shield Tunnel (${{isEast ? "Eastbound Track: Howrah Maidan to Esplanade" : "Westbound Track: Esplanade to Howrah Maidan"}})`,
+                ulpin: `${{data.base_ulpin}}-UTL-U03-HT0${{isEast ? 1 : 2}}-K`,
+                z: "-27.2m to -20.8m (Depth 24m MSL)",
                 area: "340 m²",
-                vol: "1480 m³",
+                vol: "1520 m³",
                 owner: "Kolkata Metro Rail Corporation (KMRCL)",
-                val: "₹ 620 Cr"
+                val: "₹ 650 Cr"
               }}
             }};
             groups.UTL.add(tMesh);
-            meshMap.set(`UTL_HOOGHLY_${{side > 0 ? "EAST" : "WEST"}}`, tMesh);
+            meshMap.set(`UTL_HOOGHLY_${{isEast ? "EAST" : "WEST"}}`, tMesh);
 
-            // Subaqueous Blue/Green LED Ceiling Light Strip (Signature 520m Under-River Feature)
-            const ledGeo = new THREE.BoxGeometry(50, 0.3, 0.2);
-            const ledMat = new THREE.MeshBasicMaterial({{ color: side > 0 ? 0x38bdf8 : 0x34d399 }});
+            // Bolted Precast Concrete Segmental Lining Rings
+            const ringMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.8 }});
+            for (let rx = 2; rx <= 38; rx += 4.5) {{
+              const ringGeo = new THREE.TorusGeometry(3.25, 0.12, 8, 28);
+              ringGeo.rotateY(Math.PI / 2);
+              const rMesh = new THREE.Mesh(ringGeo, ringMat);
+              rMesh.position.set(rx, ty, -24.0);
+              groups.UTL.add(rMesh);
+            }}
+
+            // Signature 520m Subaqueous Cyan/Aquamarine LED Ceiling Strip
+            const ledGeo = new THREE.BoxGeometry(50, 0.35, 0.2);
+            const ledMat = new THREE.MeshBasicMaterial({{ color: isEast ? 0x38bdf8 : 0x34d399 }});
             const ledMesh = new THREE.Mesh(ledGeo, ledMat);
-            ledMesh.position.set(20, 20 + (side * 8), -21.3);
+            ledMesh.position.set(20, ty, -21.1);
             groups.UTL.add(ledMesh);
+
+            // Concrete Invert Track Slab & Dual Steel Running Rails
+            const slab = new THREE.Mesh(new THREE.BoxGeometry(50, 2.8, 0.35), new THREE.MeshStandardMaterial({{ color: 0x334155 }}));
+            slab.position.set(20, ty, -26.3);
+            groups.UTL.add(slab);
+
+            const rMat = new THREE.MeshStandardMaterial({{ color: 0xf1f5f9, metalness: 0.9 }});
+            const r1 = new THREE.Mesh(new THREE.BoxGeometry(50, 0.12, 0.2), rMat);
+            r1.position.set(20, ty - 0.72, -26.0);
+            groups.UTL.add(r1);
+            const r2 = new THREE.Mesh(new THREE.BoxGeometry(50, 0.12, 0.2), rMat);
+            r2.position.set(20, ty + 0.72, -26.0);
+            groups.UTL.add(r2);
           }});
 
-          // 5. Cross-Passage Escape Chamber & Sump Pump Vault
-          createPrism("UTL_CROSS_PASS", [[17,12],[23,12],[23,28],[17,28]], -26.0, -22.0, 0x10b981, 0.92, "UTL", -3, {{
-            name: "Underwater Evacuation Cross-Passage, Pressure Bulkhead & Sump Vault",
+          // 5. Realistic 4-Coach Kolkata Metro BEML Stainless Steel Trainset (Eastbound Tunnel)
+          const kTrainY = 29.0;
+          const kCoachMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.85, roughness: 0.2 }});
+          const kGreenStripe = new THREE.MeshBasicMaterial({{ color: 0x15803d }});
+          const kYellowStripe = new THREE.MeshBasicMaterial({{ color: 0xfacc15 }});
+          const kWinMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1 }});
+
+          [-12, -4, 4, 12].forEach((cx, idx) => {{
+            const coach = new THREE.Mesh(new THREE.BoxGeometry(7.0, 2.4, 2.4), kCoachMat);
+            coach.position.set(20 + cx, kTrainY, -24.2);
+            groups.UTL.add(coach);
+
+            // Signature Green & Yellow Double Stripe Livery
+            const sG = new THREE.Mesh(new THREE.BoxGeometry(7.05, 2.45, 0.25), kGreenStripe);
+            sG.position.set(20 + cx, kTrainY, -24.5);
+            groups.UTL.add(sG);
+            const sY = new THREE.Mesh(new THREE.BoxGeometry(7.05, 2.45, 0.12), kYellowStripe);
+            sY.position.set(20 + cx, kTrainY, -24.75);
+            groups.UTL.add(sY);
+
+            // Windows
+            const wN = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.08, 0.75), kWinMat);
+            wN.position.set(20 + cx, kTrainY + 1.22, -23.8);
+            groups.UTL.add(wN);
+            const wS = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.08, 0.75), kWinMat);
+            wS.position.set(20 + cx, kTrainY - 1.22, -23.8);
+            groups.UTL.add(wS);
+
+            // Lead Driving Cab with Headlights
+            if (idx === 3) {{
+              const cab = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.2, 1.8), new THREE.MeshStandardMaterial({{ color: 0x0f172a }}));
+              cab.position.set(20 + cx + 3.8, kTrainY, -24.2);
+              groups.UTL.add(cab);
+
+              const hl1 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), new THREE.MeshBasicMaterial({{ color: 0xfef08a }}));
+              hl1.position.set(20 + cx + 4.2, kTrainY - 0.6, -24.7);
+              groups.UTL.add(hl1);
+              const hl2 = hl1.clone();
+              hl2.position.set(20 + cx + 4.2, kTrainY + 0.6, -24.7);
+              groups.UTL.add(hl2);
+            }}
+          }});
+
+          // 6. Cross-Passage Escape Chamber with Heavy Marine Pressure Bulkheads
+          createPrism("UTL_CROSS_PASS", [[17, 11], [23, 11], [23, 29], [17, 29]], -26.0, -22.0, 0x10b981, 0.94, "UTL", -3, {{
+            name: "Subaqueous Emergency Cross-Passage, Pressure Bulkheads & Sump Drainage Vault",
             ulpin: `${{data.base_ulpin}}-UTL-U03-CP01-E`,
             z: "-26.0m to -22.0m",
-            area: "96 m²",
-            vol: "384 m³",
+            area: "108 m²",
+            vol: "432 m³",
             owner: "KMRCL Safety & Disaster Management Directorate",
-            val: "₹ 48.0 Cr"
+            val: "₹ 55.0 Cr"
+          }});
+
+          // Circular Watertight Pressure Bulkhead Doors
+          [-1, 1].forEach(side => {{
+            const bhGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.4, 20);
+            bhGeo.rotateZ(Math.PI / 2);
+            const bhMat = new THREE.MeshStandardMaterial({{ color: 0xef4444, metalness: 0.8, roughness: 0.3 }});
+            const bh = new THREE.Mesh(bhGeo, bhMat);
+            bh.position.set(20, 20 + (side * 7.5), -24.0);
+            groups.UTL.add(bh);
           }});
         }}
 
         // ARCHETYPE 10: GIFT Subsurface Utility Tunnel (TUM) - Multi-Utility Conduit System
         function buildUtilityTunnelTrench(data) {{
-          // Walk-Through Utility Trench (-16 to 0m)
-          createPrism("SUB_TRENCH", [[10,2],[30,2],[30,38],[10,38]], -16, 0, 0x334155, 0.8, "SUB", -1, {{
-            name: "GIFT City Walk-Through Utility Tunnel (TUM Trench)",
+          // 1. Walk-Through Reinforced Concrete Utility Trench (-16m to 0m)
+          createPrism("SUB_TRENCH", [[8, 2], [32, 2], [32, 38], [8, 38]], -16, 0, 0x334155, 0.82, "SUB", -1, {{
+            name: "GIFT City Walk-Through Utility Tunnel (TUM Trench Corridor)",
             ulpin: `${{data.base_ulpin}}-SUB-B01-TM01-G`,
             z: "-16.0m to 0.0m",
-            area: "720 m²",
-            vol: "11520 m³",
-            owner: "GIFT Urban Infrastructure Ltd",
-            val: "₹ 890 Cr"
+            area: "864 m²",
+            vol: "13824 m³",
+            owner: "GIFT Urban Infrastructure Ltd (Smart Utility SPV)",
+            val: "₹ 920 Cr"
           }});
 
-          // 4 Conduits: District Cooling (Cyan), Vacuum Waste (Purple), Power (Amber), Water (Emerald)
-          const conduits = [
-            {{ id: "COOLING", clr: 0x06b6d4, z: -4, name: "District Cooling Chilled Water 900mm Pipes" }},
-            {{ id: "WASTE", clr: 0xa855f7, z: -8, name: "Automated Vacuum Waste Collection (AVWC) Tubes" }},
-            {{ id: "POWER", clr: 0xf59e0b, z: -11, name: "66kV Extra High Voltage Underground Power Trays" }},
-            {{ id: "WATER", clr: 0x10b981, z: -14, name: "Dual Potable & Recycled Irrigation Water Conduits" }}
+          // Precast Concrete Structural Ribs along Trench Walls
+          const ribMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.9 }});
+          for (let ry = 4; ry <= 36; ry += 4) {{
+            const ribL = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 15.5), ribMat);
+            ribL.position.set(8.4, ry, -8);
+            groups.SUB.add(ribL);
+            const ribR = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 15.5), ribMat);
+            ribR.position.set(31.6, ry, -8);
+            groups.SUB.add(ribR);
+          }}
+
+          // Central Longitudinal Floor Drainage Invert Channel
+          const drain = new THREE.Mesh(new THREE.BoxGeometry(2.0, 36, 0.4), new THREE.MeshStandardMaterial({{ color: 0x0f172a }}));
+          drain.position.set(20, 20, -15.8);
+          groups.SUB.add(drain);
+
+          // 2. Elevated Galvanized Steel Catwalk & Walkway System (Z = -9.0m)
+          // Anti-slip walkway grating
+          const catwalkMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, metalness: 0.85, roughness: 0.3 }});
+          const catwalk = new THREE.Mesh(new THREE.BoxGeometry(2.6, 36, 0.15), catwalkMat);
+          catwalk.position.set(20, 20, -9.0);
+          groups.SUB.add(catwalk);
+
+          // Yellow Industrial Safety Handrails on Catwalk
+          const railMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, roughness: 0.4 }});
+          const railL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 36, 1.1), railMat);
+          railL.position.set(18.7, 20, -8.45);
+          groups.SUB.add(railL);
+          const railR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 36, 1.1), railMat);
+          railR.position.set(21.3, 20, -8.45);
+          groups.SUB.add(railR);
+
+          // Vertical Steel Access Ladder with Round Safety Cage (North Portal)
+          const ladMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.9 }});
+          const lad = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 15.0), ladMat);
+          lad.position.set(20, 3.2, -7.5);
+          groups.SUB.add(lad);
+
+          // 3. Five Color-Coded Conduit Systems on Heavy Cantilevered Steel Brackets
+          const conduitLayers = [
+            {{
+              id: "COOLING",
+              name: "District Cooling Chilled Water 900mm Insulated Pipelines",
+              clr: 0x06b6d4,
+              z: -4.5,
+              dia: 0.9,
+              xOffsets: [13.2, 26.8],
+              ulpinSuffix: "DC01-C",
+              val: "₹ 340 Cr",
+              area: "144 m²",
+              vol: "1296 m³"
+            }},
+            {{
+              id: "WASTE",
+              name: "Automated Vacuum Waste Collection (AVWC) Pneumatic Steel Tubes",
+              clr: 0xa855f7,
+              z: -7.2,
+              dia: 0.55,
+              xOffsets: [14.0, 26.0],
+              ulpinSuffix: "VW01-P",
+              val: "₹ 180 Cr",
+              area: "90 m²",
+              vol: "540 m³"
+            }},
+            {{
+              id: "POWER",
+              name: "66kV Extra High Voltage Underground Transmission Cable Trays",
+              clr: 0xf59e0b,
+              z: -10.5,
+              dia: 0.4,
+              isTray: true,
+              xOffsets: [13.8, 26.2],
+              ulpinSuffix: "HV01-E",
+              val: "₹ 260 Cr",
+              area: "120 m²",
+              vol: "720 m³"
+            }},
+            {{
+              id: "WATER",
+              name: "Dual Potable Water & Recycled Tertiary Irrigation Conduits",
+              clr: 0x10b981,
+              z: -13.5,
+              dia: 0.65,
+              xOffsets: [13.5, 26.5],
+              ulpinSuffix: "WT01-W",
+              val: "₹ 140 Cr",
+              area: "105 m²",
+              vol: "630 m³"
+            }},
+            {{
+              id: "TELECOM",
+              name: "Smart City SCADA & Redundant Fiber Optic Backbone Trays",
+              clr: 0x38bdf8,
+              z: -2.2,
+              dia: 0.35,
+              isTray: true,
+              xOffsets: [14.2, 25.8],
+              ulpinSuffix: "TC01-S",
+              val: "₹ 80 Cr",
+              area: "75 m²",
+              vol: "300 m³"
+            }}
           ];
 
-          conduits.forEach(c => {{
-            const pGeo = new THREE.CylinderGeometry(0.8, 0.8, 38, 16);
-            const pMat = new THREE.MeshStandardMaterial({{ color: c.clr, roughness: 0.3, transparent: true, opacity: 0.95 }});
-            const pMesh = new THREE.Mesh(pGeo, pMat);
-            pMesh.position.set(16, 20, c.z);
-            groups.UTL.add(pMesh);
+          conduitLayers.forEach(c => {{
+            c.xOffsets.forEach((cx, idx) => {{
+              let pipeMesh;
+              if (c.isTray) {{
+                // Cable ladder tray
+                const tGeo = new THREE.BoxGeometry(1.2, 36, 0.25);
+                const tMat = new THREE.MeshStandardMaterial({{ color: c.clr, metalness: 0.7, roughness: 0.3 }});
+                pipeMesh = new THREE.Mesh(tGeo, tMat);
+                pipeMesh.position.set(cx, 20, c.z);
+              }} else {{
+                // Cylindrical pipe with insulated casing
+                const pGeo = new THREE.CylinderGeometry(c.dia, c.dia, 36, 20);
+                pGeo.rotateX(Math.PI / 2);
+                const pMat = new THREE.MeshStandardMaterial({{ color: c.clr, roughness: 0.25, metalness: 0.4, transparent: true, opacity: 0.92 }});
+                pipeMesh = new THREE.Mesh(pGeo, pMat);
+                pipeMesh.position.set(cx, 20, c.z);
 
-            const pMesh2 = pMesh.clone();
-            pMesh2.position.set(24, 20, c.z);
-            groups.UTL.add(pMesh2);
+                // Flanged expansion joint rings at intervals
+                for (let fy = 6; fy <= 34; fy += 8) {{
+                  const flGeo = new THREE.CylinderGeometry(c.dia * 1.25, c.dia * 1.25, 0.35, 16);
+                  flGeo.rotateX(Math.PI / 2);
+                  const flMesh = new THREE.Mesh(flGeo, new THREE.MeshStandardMaterial({{ color: 0x475569, metalness: 0.8 }}));
+                  flMesh.position.set(cx, fy, c.z);
+                  groups.UTL.add(flMesh);
+                }}
+              }}
 
-            meshMap.set(`UTL_${{c.id}}`, pMesh);
+              // Structural Cantilever Support Brackets from Wall
+              const brkGeo = new THREE.BoxGeometry(Math.abs(cx > 20 ? (31.6 - cx + 0.6) : (cx - 8.4 + 0.6)), 0.2, 0.2);
+              const brkMat = new THREE.MeshStandardMaterial({{ color: 0x64748b, metalness: 0.8 }});
+              for (let by = 4; by <= 36; by += 8) {{
+                const brk = new THREE.Mesh(brkGeo, brkMat);
+                brk.position.set(cx > 20 ? (cx + (31.6 - cx) / 2) : (cx - (cx - 8.4) / 2), by, c.z - 0.35);
+                groups.UTL.add(brk);
+              }}
+
+              pipeMesh.userData = {{
+                id: `UTL_${{c.id}}_${{idx}}`,
+                stratum: "UTL",
+                originalZ: c.z,
+                floorIdx: Math.round(c.z / 4),
+                baseOpacity: 0.92,
+                info: {{
+                  name: `${{c.name}} (${{idx === 0 ? "Bank A - West" : "Bank B - East"}})`,
+                  ulpin: `${{data.base_ulpin}}-UTL-U01-${{c.ulpinSuffix}}`,
+                  z: `${{(c.z - 0.5).toFixed(1)}}m to ${{(c.z + 0.5).toFixed(1)}}m`,
+                  area: c.area,
+                  vol: c.vol,
+                  owner: "GIFT Multi-Services Utility SPV",
+                  val: c.val
+                }}
+              }};
+
+              groups.UTL.add(pipeMesh);
+              if (idx === 0) meshMap.set(`UTL_${{c.id}}`, pipeMesh);
+            }});
           }});
+
+          // 4. Overhead Continuous LED Strip Lighting & SCADA Sensors
+          const ledGeo = new THREE.BoxGeometry(0.3, 36, 0.1);
+          const ledMat = new THREE.MeshBasicMaterial({{ color: 0xffffff }});
+          const led = new THREE.Mesh(ledGeo, ledMat);
+          led.position.set(20, 20, -1.0);
+          groups.UTL.add(led);
+
+          // Surface Access Kiosk & Ventilation Cowl
+          const hatchGeo = new THREE.BoxGeometry(4.0, 4.0, 1.4);
+          const hatchMat = new THREE.MeshStandardMaterial({{ color: 0x475569, metalness: 0.7, roughness: 0.4 }});
+          const hatch = new THREE.Mesh(hatchGeo, hatchMat);
+          hatch.position.set(20, 4, 0.7);
+          groups.SUR.add(hatch);
         }}
 
         // ARCHETYPE 11: TIDEL Park IT Expressway (Chennai) - Linear Monolith with Spinal Glass Atrium
         function buildLinearITSpine(data) {{
           const tidelTenants = [
-            "TIDEL Park Common Atrium & Visitor Reception",
-            "Cisco Systems India Private Limited",
-            "Tata Consultancy Services (Global Delivery Unit)",
-            "HCL Technologies Software Engineering Hub",
-            "Sify Technologies Cloud Data Services",
-            "TIDEL Park Ltd (Executive Corporate Suites)"
+            "TIDEL Park Common Grand Atrium & Visitor Reception",
+            "Tata Consultancy Services (Global BFSI Delivery Center)",
+            "Cisco Systems India (Advanced Cloud Networking Lab)",
+            "HCL Technologies (AI & Digital Engineering Hub)",
+            "Cognizant Technology Solutions (Digital Business Solutions)",
+            "Sify Technologies Cloud Data & Executive Penthouse Suites"
           ];
 
-          // Linear IT Block (0 to 28m)
+          // 1. Linear IT Monolith (Floors G00 to F05, Footprint 36m x 28m)
           for (let f = 0; f <= 5; f++) {{
             const zMin = f * 4.6;
             const zMax = zMin + 4.6;
             const lvl = f === 0 ? "G00" : `F0${{f}}`;
-            const flrOwner = tidelTenants[f] || "OMR IT Enterprise Tenant";
+            const flrOwner = tidelTenants[f] || "TIDEL OMR Tech Enterprise Tenant";
 
-            // North Wing
-            createPrism(`BLD_${{lvl}}_NORTH`, [[4,21],[36,21],[36,31],[4,31]], zMin, zMax, 0x0284c7, 0.85, "BLD", f, {{
-              name: `TIDEL Park IT North Block (${{lvl}})`,
+            // North IT Office Wing (polygon [2,22] to [38,32])
+            createPrism(`BLD_${{lvl}}_NORTH`, [[2, 22], [38, 22], [38, 32], [2, 32]], zMin, zMax, 0x0284c7, 0.88, "BLD", f, {{
+              name: `TIDEL Park North Wing Block (${{lvl}})`,
               ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-NB01-C`,
               z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "320 m²",
-              vol: "1472 m³",
+              area: "360 m²",
+              vol: "1656 m³",
               owner: flrOwner,
-              val: "₹ 38.0 Cr"
+              val: "₹ 45.0 Cr"
             }});
 
-            // Central Spinal Glass Canyon
-            createPrism(`COM_${{lvl}}_SPINE`, [[4,17],[36,17],[36,21],[4,21]], zMin, zMax, 0x38bdf8, 0.6, "COM", f, {{
-              name: `TIDEL Central Spinal Atrium & Skywalks (${{lvl}})`,
+            // Central Soaring Spinal Glass Canyon Atrium (polygon [2,16] to [38,22])
+            createPrism(`COM_${{lvl}}_SPINE`, [[2, 16], [38, 16], [38, 22], [2, 22]], zMin, zMax, 0x38bdf8, 0.58, "COM", f, {{
+              name: `TIDEL Central Spinal Glass Canyon & Aerial Concourse (${{lvl}})`,
               ulpin: `${{data.base_ulpin}}-COM-${{lvl}}-SP01-S`,
               z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "128 m²",
-              vol: "588 m³",
-              owner: "TIDEL Park Common Strata Facility",
-              val: "₹ 12.0 Cr"
+              area: "216 m²",
+              vol: "993 m³",
+              owner: "TIDEL Park Ltd (Shared Corporate Facilities)",
+              val: "₹ 16.0 Cr"
             }});
 
-            // South Wing
-            createPrism(`BLD_${{lvl}}_SOUTH`, [[4,7],[36,7],[36,17],[4,17]], zMin, zMax, 0x0369a1, 0.85, "BLD", f, {{
-              name: `TIDEL Park IT South Block (${{lvl}})`,
+            // South IT Office Wing (polygon [2,6] to [38,16])
+            createPrism(`BLD_${{lvl}}_SOUTH`, [[2, 6], [38, 6], [38, 16], [2, 16]], zMin, zMax, 0x0369a1, 0.88, "BLD", f, {{
+              name: `TIDEL Park South Wing Block (${{lvl}})`,
               ulpin: `${{data.base_ulpin}}-BLD-${{lvl}}-SB01-T`,
               z: `${{zMin.toFixed(1)}}m to ${{zMax.toFixed(1)}}m`,
-              area: "320 m²",
-              vol: "1472 m³",
+              area: "360 m²",
+              vol: "1656 m³",
               owner: flrOwner,
-              val: "₹ 38.0 Cr"
+              val: "₹ 45.0 Cr"
             }});
+
+            // Horizontal Architectural Brise-Soleil (Silver Metallic Sunshades)
+            const louverMat = new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.85, roughness: 0.2 }});
+            const louverN = new THREE.Mesh(new THREE.BoxGeometry(36, 0.4, 0.25), louverMat);
+            louverN.position.set(20, 32.2, zMin + 2.3);
+            groups.BLD.add(louverN);
+            const louverS = new THREE.Mesh(new THREE.BoxGeometry(36, 0.4, 0.25), louverMat);
+            louverS.position.set(20, 5.8, zMin + 2.3);
+            groups.BLD.add(louverS);
           }}
 
-          // Subsurface
-          createPrism("SUB_TIDEL", [[4,7],[36,7],[36,31],[4,31]], -12, 0, 0xf59e0b, 0.85, "SUB", -1, {{
-            name: "TIDEL Basement Parking & Storm Reservoir",
-            ulpin: `${{data.base_ulpin}}-SUB-B02-TD01-8`,
-            z: "-12.0m to 0.0m",
-            area: "768 m²",
-            vol: "9216 m³",
-            owner: "TIDEL Park Ltd & Infrastructure Operations",
-            val: "₹ 95.0 Cr"
+          // 2. Suspended Aerial Skywalk Bridges across the Atrium Canyon (Floors 2, 4, 5)
+          [2, 4, 5].forEach(flr => {{
+            const szMin = flr * 4.6;
+            const skybridge = new THREE.Mesh(
+              new THREE.BoxGeometry(3.6, 6.0, 3.2),
+              new THREE.MeshStandardMaterial({{ color: 0x7dd3fc, transparent: true, opacity: 0.75, roughness: 0.2 }})
+            );
+            skybridge.position.set(20, 19, szMin + 1.8);
+            groups.COM.add(skybridge);
+
+            // Steel truss framing around skybridge
+            const frameMat = new THREE.MeshStandardMaterial({{ color: 0x334155, metalness: 0.9 }});
+            const f1 = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.2, 3.4), frameMat);
+            f1.position.set(20, 16.0, szMin + 1.8);
+            groups.COM.add(f1);
+            const f2 = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.2, 3.4), frameMat);
+            f2.position.set(20, 22.0, szMin + 1.8);
+            groups.COM.add(f2);
+          }});
+
+          // 3. Grand Triple-Height Space-Frame Entrance Portico
+          const porticoGeo = new THREE.BoxGeometry(10, 6, 0.4);
+          const porticoMat = new THREE.MeshStandardMaterial({{ color: 0x475569, metalness: 0.8, roughness: 0.3 }});
+          const portico = new THREE.Mesh(porticoGeo, porticoMat);
+          portico.position.set(20, 3, 5.2);
+          groups.BLD.add(portico);
+
+          // Support Columns for Portico
+          [-4, 4].forEach(px => {{
+            const col = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 5.2, 16), porticoMat);
+            col.rotateX(Math.PI / 2);
+            col.position.set(20 + px, 3, 2.6);
+            groups.BLD.add(col);
+          }});
+
+          // 4. Landscaped Rajiv Gandhi Salai (OMR) Frontage & Reflecting Water Feature
+          const waterGeo = new THREE.BoxGeometry(18, 2.5, 0.3);
+          const waterMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1, transparent: true, opacity: 0.85 }});
+          const water = new THREE.Mesh(waterGeo, waterMat);
+          water.position.set(20, 1.2, 0.15);
+          groups.SUR.add(water);
+
+          // Tropical Palm Trees along Boulevard
+          for (let px = 5; px <= 35; px += 7.5) {{
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 3.8, 8), new THREE.MeshStandardMaterial({{ color: 0x78350f }}));
+            trunk.rotateX(Math.PI / 2);
+            trunk.position.set(px, 1.2, 1.9);
+            groups.SUR.add(trunk);
+
+            const crown = new THREE.Mesh(new THREE.SphereGeometry(1.1, 8, 8), new THREE.MeshStandardMaterial({{ color: 0x15803d }}));
+            crown.position.set(px, 1.2, 4.0);
+            groups.SUR.add(crown);
+          }}
+
+          // TIDEL Corporate Entrance Totem
+          const totem = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 3.2), new THREE.MeshStandardMaterial({{ color: 0x0f172a }}));
+          totem.position.set(6, 3.0, 1.6);
+          groups.SUR.add(totem);
+
+          // 5. Rooftop Industrial HVAC Chillers, BMU Crane & Executive Helipad
+          // 6 Cooling Towers on North Roof
+          for (let cx = 8; cx <= 32; cx += 5) {{
+            const ct = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, 2.4, 16), new THREE.MeshStandardMaterial({{ color: 0x334155, roughness: 0.6 }}));
+            ct.rotateX(Math.PI / 2);
+            ct.position.set(cx, 27, 28.8);
+            groups.AIR.add(ct);
+          }}
+
+          // Dedicated Executive Helipad on South Wing Roof
+          const padGeo = new THREE.BoxGeometry(12, 8, 0.4);
+          const padMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.9 }});
+          const pad = new THREE.Mesh(padGeo, padMat);
+          pad.position.set(20, 11, 27.8);
+          groups.AIR.add(pad);
+
+          // Yellow Touchdown Circle & "H" Marking
+          const hCanvas = document.createElement('canvas');
+          hCanvas.width = 128; hCanvas.height = 128;
+          const hctx = hCanvas.getContext('2d');
+          hctx.fillStyle = '#1e293b'; hctx.fillRect(0, 0, 128, 128);
+          hctx.strokeStyle = '#facc15'; hctx.lineWidth = 8;
+          hctx.beginPath(); hctx.arc(64, 64, 48, 0, Math.PI * 2); hctx.stroke();
+          hctx.fillStyle = '#facc15'; hctx.font = 'bold 56px sans-serif';
+          hctx.textAlign = 'center'; hctx.textBaseline = 'middle';
+          hctx.fillText('H', 64, 64);
+          const hTex = new THREE.CanvasTexture(hCanvas);
+          const hMesh = new THREE.Mesh(new THREE.PlaneGeometry(9, 7), new THREE.MeshBasicMaterial({{ map: hTex, transparent: true }}));
+          hMesh.position.set(20, 11, 28.05);
+          groups.AIR.add(hMesh);
+
+          // Facade Maintenance BMU Crane Rig
+          const bmuBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.8), new THREE.MeshStandardMaterial({{ color: 0x475569 }}));
+          bmuBase.position.set(34, 11, 28.5);
+          groups.AIR.add(bmuBase);
+          const bmuArm = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.4, 0.4), new THREE.MeshStandardMaterial({{ color: 0xfacc15 }}));
+          bmuArm.position.set(31, 11, 29.8);
+          groups.AIR.add(bmuArm);
+
+          // Communications Satellite Radome & Obstruction Beacon Mast
+          const radome = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 16), new THREE.MeshStandardMaterial({{ color: 0xf8fafc, roughness: 0.3 }}));
+          radome.position.set(6, 11, 28.8);
+          groups.AIR.add(radome);
+
+          const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.3, 10, 8), new THREE.MeshStandardMaterial({{ color: 0xe2e8f0, metalness: 0.9 }}));
+          mast.rotateX(Math.PI / 2);
+          mast.position.set(20, 19, 32.6);
+          groups.AIR.add(mast);
+
+          const redBcn = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), new THREE.MeshBasicMaterial({{ color: 0xef4444 }}));
+          redBcn.position.set(20, 19, 37.8);
+          groups.AIR.add(redBcn);
+
+          // 6. Subsurface Dual Basements (Z = -14.0m to 0.0m)
+          createPrism("SUB_TIDEL_B1", [[2, 6], [38, 6], [38, 32], [2, 32]], -7, 0, 0xf59e0b, 0.85, "SUB", -1, {{
+            name: "TIDEL Automated Employee Parking & Logistics Docks (Level B1)",
+            ulpin: `${{data.base_ulpin}}-SUB-B01-TD01-A`,
+            z: "-7.0m to 0.0m",
+            area: "936 m²",
+            vol: "6552 m³",
+            owner: "TIDEL Park Ltd (Parking & Logistics)",
+            val: "₹ 80.0 Cr"
+          }});
+
+          createPrism("SUB_TIDEL_B2", [[2, 6], [38, 6], [38, 32], [2, 32]], -14, -7, 0xd97706, 0.88, "SUB", -2, {{
+            name: "100% Redundant Diesel Power Generator Bank & 110kV Substation (Level B2)",
+            ulpin: `${{data.base_ulpin}}-SUB-B02-TD02-B`,
+            z: "-14.0m to -7.0m",
+            area: "936 m²",
+            vol: "6552 m³",
+            owner: "TIDEL Energy & Critical Utilities SPV",
+            val: "₹ 110 Cr"
           }});
         }}
 
         // ARCHETYPE 12: Transit Terminal Canopy (Seawoods Transit, Durgam Cheruvu Hub)
         function buildTransitTerminalCanopy(data) {{
-          // Aerodynamic Tubular Canopy Arches
-          const archGeo = new THREE.TorusGeometry(16, 1.8, 12, 32, Math.PI);
-          archGeo.rotateY(Math.PI / 2);
-          const archMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.3, transparent: true, opacity: 0.85 }});
+          // Real-World Multi-Modal Transit Terminal & Cable-Stayed Bridge Pylon Hub
+          // 1. Signature Structural Concrete Cable-Stayed Pylon Tower (Z = 0.0m to 42.0m)
+          // Pylon A-Frame Legs
+          const pylonMat = new THREE.MeshStandardMaterial({{ color: 0x64748b, roughness: 0.7, metalness: 0.2 }});
           
-          [-8, 8].forEach(pos => {{
+          // West Leg
+          const legW = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 40), pylonMat);
+          legW.position.set(15.5, 20, 20);
+          legW.rotation.y = 0.12;
+          groups.AIR.add(legW);
+
+          // East Leg
+          const legE = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 40), pylonMat);
+          legE.position.set(24.5, 20, 20);
+          legE.rotation.y = -0.12;
+          groups.AIR.add(legE);
+
+          // Pylon Head Apex & Crossbeams
+          const pylonHead = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.6, 6), pylonMat);
+          pylonHead.position.set(20, 20, 40);
+          groups.AIR.add(pylonHead);
+
+          const crossBeam = new THREE.Mesh(new THREE.BoxGeometry(10.5, 2.0, 1.6), pylonMat);
+          crossBeam.position.set(20, 20, 19);
+          groups.AIR.add(crossBeam);
+
+          // Aircraft Obstruction Warning Light on Apex
+          const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), new THREE.MeshBasicMaterial({{ color: 0xef4444 }}));
+          beacon.position.set(20, 20, 43.4);
+          groups.AIR.add(beacon);
+
+          // 2. High-Tensile Steel Stay Cables (Semi-Harp Fan Array)
+          const cableMat = new THREE.LineBasicMaterial({{ color: 0xf1f5f9, linewidth: 2 }});
+          const cableGeo = new THREE.BufferGeometry();
+          const cPts = [];
+          for (let cy = 2; cy <= 38; cy += 4.5) {{
+            // Cables to West deck edge
+            cPts.push(new THREE.Vector3(19.2, 20, 39.5), new THREE.Vector3(7.5, cy, 9.2));
+            // Cables to East deck edge
+            cPts.push(new THREE.Vector3(20.8, 20, 39.5), new THREE.Vector3(32.5, cy, 9.2));
+          }}
+          cableGeo.setFromPoints(cPts);
+          groups.AIR.add(new THREE.LineSegments(cableGeo, cableMat));
+
+          // 3. Elevated Roadway Viaduct Deck (Z = 8.0m to 10.0m)
+          createPrism("AIR_VIADUCT", [[6, 0], [34, 0], [34, 40], [6, 40]], 8.0, 9.4, 0x475569, 0.95, "AIR", 2, {{
+            name: "Elevated Cable-Stayed 4-Lane Rapid Transit Deck",
+            ulpin: `${{data.base_ulpin}}-AIR-E01-CS01-T`,
+            z: "+8.0m to +9.4m",
+            area: "1120 m²",
+            vol: "1568 m³",
+            owner: "State Road Development & Urban Transit Corporation",
+            val: "₹ 180 Cr"
+          }});
+
+          // Aerodynamic Concrete Parapet Crash Barriers
+          const barMat = new THREE.MeshStandardMaterial({{ color: 0x94a3b8, roughness: 0.8 }});
+          const barL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 40, 0.8), barMat);
+          barL.position.set(6.2, 20, 9.8);
+          groups.AIR.add(barL);
+          const barR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 40, 0.8), barMat);
+          barR.position.set(33.8, 20, 9.8);
+          groups.AIR.add(barR);
+
+          // LED Street Lighting Masts on Viaduct
+          for (let ly = 4; ly <= 36; ly += 8) {{
+            const mastGeo = new THREE.CylinderGeometry(0.08, 0.12, 3.2, 8);
+            mastGeo.rotateX(Math.PI / 2);
+            const mastMesh = new THREE.Mesh(mastGeo, new THREE.MeshStandardMaterial({{ color: 0xe2e8f0 }}));
+            mastMesh.position.set(20, ly, 11.0);
+            groups.AIR.add(mastMesh);
+
+            const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.1), new THREE.MeshBasicMaterial({{ color: 0xfef08a }}));
+            lamp.position.set(20, ly, 12.6);
+            groups.AIR.add(lamp);
+          }}
+
+          // 4. Sweeping Tensile Fabric Terminal Canopy Structure (Z = 0.0m to 7.0m)
+          // Curved space-frame arches
+          const archGeo = new THREE.TorusGeometry(15, 0.6, 12, 32, Math.PI);
+          archGeo.rotateY(Math.PI / 2);
+          const archMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, metalness: 0.7, roughness: 0.3 }});
+          
+          [-10, 0, 10].forEach(pos => {{
             const arch = new THREE.Mesh(archGeo, archMat);
             arch.position.set(20, 20 + pos, 0);
             groups.BLD.add(arch);
           }});
 
-          // Concourse Deck (0 to 6m)
-          createPrism("BLD_CONCOURSE", [[6,8],[34,8],[34,32],[6,32]], 0, 6, 0x38bdf8, 0.8, "BLD", 0, {{
-            name: "High-Capacity Transit Concourse & Platform Hall",
+          // White Tensile Fabric Canopy Membrane
+          const canopyTex = getCurvedCanopyTexture();
+          const canopyGeo = new THREE.CylinderGeometry(15.2, 15.2, 26, 32, 1, true, 0, Math.PI);
+          canopyGeo.rotateZ(Math.PI / 2);
+          const canopyMat = new THREE.MeshStandardMaterial({{
+            map: canopyTex,
+            color: 0xf8fafc,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.88,
+            roughness: 0.4
+          }});
+          const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+          canopy.position.set(20, 20, 0);
+          groups.BLD.add(canopy);
+
+          // 5. Central Ground-Level Transit Concourse & Platform Hall (0.0m to 6.0m)
+          createPrism("BLD_CONCOURSE", [[8, 8], [32, 8], [32, 32], [8, 32]], 0, 6.0, 0x38bdf8, 0.82, "BLD", 0, {{
+            name: "High-Capacity Multi-Modal Transit Concourse & Ticketing Terminal",
             ulpin: `${{data.base_ulpin}}-BLD-G00-TT01-4`,
             z: "0.0m to +6.0m",
-            area: "672 m²",
-            vol: "4032 m³",
-            owner: "State Multi-Modal Transit Authority & Rail Concessionaire",
-            val: "₹ 160 Cr"
+            area: "576 m²",
+            vol: "3456 m³",
+            owner: "State Multi-Modal Transit Authority & Central Railway",
+            val: "₹ 190 Cr"
+          }});
+
+          // 6. Bus Rapid Transit (BRT) Bays & 2 Detailed Modern Electric Transit Buses
+          // Asphalt Bus Bays on East and West sides
+          const bayMat = new THREE.MeshStandardMaterial({{ color: 0x1e293b, roughness: 0.95 }});
+          const bayW = new THREE.Mesh(new THREE.BoxGeometry(4.5, 34, 0.15), bayMat);
+          bayW.position.set(4, 20, 0.1);
+          groups.SUR.add(bayW);
+          const bayE = new THREE.Mesh(new THREE.BoxGeometry(4.5, 34, 0.15), bayMat);
+          bayE.position.set(36, 20, 0.1);
+          groups.SUR.add(bayE);
+
+          // Tactile Boarding Kerbs
+          const kerbMat = new THREE.MeshBasicMaterial({{ color: 0xfacc15 }});
+          const kerbW = new THREE.Mesh(new THREE.BoxGeometry(0.3, 34, 0.2), kerbMat);
+          kerbW.position.set(6.3, 20, 0.2);
+          groups.SUR.add(kerbW);
+          const kerbE = new THREE.Mesh(new THREE.BoxGeometry(0.3, 34, 0.2), kerbMat);
+          kerbE.position.set(33.7, 20, 0.2);
+          groups.SUR.add(kerbE);
+
+          // 2 Electric Transit Buses (Olectra / JBM Green Zero-Emission E-Buses)
+          const busBodyMat = new THREE.MeshStandardMaterial({{ color: 0xf8fafc, roughness: 0.3 }});
+          const busGreenMat = new THREE.MeshBasicMaterial({{ color: 0x15803d }});
+          const busGlassMat = new THREE.MeshStandardMaterial({{ color: 0x0284c7, roughness: 0.1 }});
+
+          [
+            {{ x: 4.0, y: 15, rot: 0, route: "AIRPORT EXPRESS" }},
+            {{ x: 36.0, y: 25, rot: Math.PI, route: "METRO FEEDER" }}
+          ].forEach(b => {{
+            // Chassis
+            const bus = new THREE.Mesh(new THREE.BoxGeometry(2.4, 7.5, 2.2), busBodyMat);
+            bus.position.set(b.x, b.y, 1.3);
+            bus.rotation.z = b.rot;
+            groups.SUR.add(bus);
+
+            // Green livery bottom skirt
+            const skirt = new THREE.Mesh(new THREE.BoxGeometry(2.45, 7.55, 0.5), busGreenMat);
+            skirt.position.set(b.x, b.y, 0.45);
+            skirt.rotation.z = b.rot;
+            groups.SUR.add(skirt);
+
+            // Panoramic side windows
+            const win = new THREE.Mesh(new THREE.BoxGeometry(2.48, 6.2, 0.8), busGlassMat);
+            win.position.set(b.x, b.y, 1.6);
+            win.rotation.z = b.rot;
+            groups.SUR.add(win);
+
+            // Roof Battery Pack
+            const batt = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.2, 0.3), new THREE.MeshStandardMaterial({{ color: 0x475569 }}));
+            batt.position.set(b.x, b.y, 2.55);
+            batt.rotation.z = b.rot;
+            groups.SUR.add(batt);
+          }});
+
+          // 7. Subsurface Pedestrian Metro/Rail Transfer Link (Z = -6.0m to 0.0m)
+          createPrism("SUB_PED_LINK", [[8, 8], [32, 8], [32, 32], [8, 32]], -6.0, 0, 0xf59e0b, 0.85, "SUB", -1, {{
+            name: "Subsurface Multi-Modal Commuter Subway & Escalator Transfer Vault",
+            ulpin: `${{data.base_ulpin}}-SUB-B01-PL01-M`,
+            z: "-6.0m to 0.0m",
+            area: "576 m²",
+            vol: "3456 m³",
+            owner: "State Multi-Modal Transit Directorate",
+            val: "₹ 75.0 Cr"
           }});
         }}
 
@@ -2154,30 +3815,9 @@ def render_3d_digital_twin_component(
           }});
         }}
 
-        // Surrounding Urban Context Masses (Low-poly contextual blocks on perimeter)
+        // Surrounding Urban Context Masses (Disabled to ensure unobstructed view of the actual model)
         function addSurroundingUrbanContext() {{
-          const ctxMat = new THREE.MeshStandardMaterial({{ color: 0x334155, roughness: 0.7, metalness: 0.3 }});
-          const ctxBlocks = [
-            {{ x: -32, y: 20, w: 22, d: 28, h: 25 }},
-            {{ x: 72, y: 20, w: 24, d: 26, h: 32 }},
-            {{ x: 20, y: -34, w: 32, d: 18, h: 18 }},
-            {{ x: 20, y: 74, w: 30, d: 20, h: 22 }},
-            {{ x: -28, y: -28, w: 18, d: 18, h: 15 }},
-            {{ x: 68, y: 68, w: 20, d: 20, h: 28 }}
-          ];
-
-          ctxBlocks.forEach(b => {{
-            const geo = new THREE.BoxGeometry(b.w, b.d, b.h);
-            const m = new THREE.Mesh(geo, ctxMat);
-            m.position.set(b.x, b.y, b.h / 2);
-            m.receiveShadow = true;
-            m.castShadow = true;
-            
-            const wire = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({{ color: 0x64748b, transparent: true, opacity: 0.35 }}));
-            m.add(wire);
-            
-            groups.SUR.add(m);
-          }});
+          // Contextual massing blocks removed per user request for clear viewing
         }}
 
         // Procedural Architectural Curtain Wall & Spandrel Texture Generator
@@ -2222,6 +3862,113 @@ def render_3d_digital_twin_component(
           tex.repeat.set(2, 1);
           materialCache.set(hex, tex);
           return tex;
+        }}
+
+        function getCurvedCanopyTexture() {{
+          const canvas = document.createElement('canvas');
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = 'rgba(240, 249, 255, 0.85)';
+          ctx.fillRect(0, 0, 128, 128);
+          ctx.strokeStyle = '#0284c7';
+          ctx.lineWidth = 3;
+          for (let i = -128; i < 256; i += 32) {{
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 128, 128); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(i + 128, 0); ctx.lineTo(i, 128); ctx.stroke();
+          }}
+          const tex = new THREE.CanvasTexture(canvas);
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(4, 4);
+          return tex;
+        }}
+
+        function getSolarPanelTexture() {{
+          const canvas = document.createElement('canvas');
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, 0, 128, 128);
+          ctx.fillStyle = '#1e3a8a';
+          for (let x = 4; x < 128; x += 30) {{
+            for (let y = 4; y < 128; y += 30) {{
+              ctx.fillRect(x, y, 26, 26);
+            }}
+          }}
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 1;
+          for (let x = 17; x < 128; x += 30) {{
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 128); ctx.stroke();
+          }}
+          const tex = new THREE.CanvasTexture(canvas);
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(3, 3);
+          return tex;
+        }}
+
+        function createStationSignboard(textHindi, textEng, x, y, z, rotZ) {{
+          const canvas = document.createElement('canvas');
+          canvas.width = 256;
+          canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#0b3c5d';
+          ctx.fillRect(0, 0, 256, 64);
+          ctx.strokeStyle = '#facc15';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(2, 2, 252, 60);
+
+          ctx.fillStyle = '#facc15';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(textHindi, 128, 24);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 18px sans-serif';
+          ctx.fillText(textEng, 128, 50);
+
+          const tex = new THREE.CanvasTexture(canvas);
+          const boardGeo = new THREE.BoxGeometry(4.4, 0.12, 1.1);
+          const boardMat = new THREE.MeshStandardMaterial({{ map: tex, roughness: 0.4 }});
+          const boardMesh = new THREE.Mesh(boardGeo, boardMat);
+          boardMesh.position.set(x, y, z);
+          boardMesh.rotation.z = rotZ || 0;
+
+          // Steel support posts
+          const postMat = new THREE.MeshStandardMaterial({{ color: 0x64748b, metalness: 0.7 }});
+          [-1.6, 1.6].forEach(px => {{
+            const pGeo = new THREE.CylinderGeometry(0.06, 0.06, z, 8);
+            pGeo.rotateX(Math.PI / 2);
+            const pMesh = new THREE.Mesh(pGeo, postMat);
+            pMesh.position.set(x + (Math.cos(rotZ || 0) * px), y + (Math.sin(rotZ || 0) * px), z / 2);
+            groups.SUR.add(pMesh);
+          }});
+
+          groups.SUR.add(boardMesh);
+        }}
+
+        function createPalmTree(x, y, zBase) {{
+          const treeGroup = new THREE.Group();
+          const trunkMat = new THREE.MeshStandardMaterial({{ color: 0x78350f, roughness: 0.9 }});
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.32, 4.2, 8), trunkMat);
+          trunk.position.set(0, 0, 2.1);
+          trunk.rotation.x = Math.PI / 2;
+          treeGroup.add(trunk);
+
+          const frondMat = new THREE.MeshStandardMaterial({{ color: 0x15803d, roughness: 0.7, side: THREE.DoubleSide }});
+          for (let i = 0; i < 7; i++) {{
+            const angle = (i / 7) * Math.PI * 2;
+            const frondGeo = new THREE.ConeGeometry(0.8, 2.8, 4);
+            frondGeo.rotateX(Math.PI / 3);
+            const frond = new THREE.Mesh(frondGeo, frondMat);
+            frond.position.set(Math.cos(angle) * 0.4, Math.sin(angle) * 0.4, 4.1);
+            frond.rotation.z = angle;
+            treeGroup.add(frond);
+          }}
+          treeGroup.position.set(x, y, zBase || 0);
+          groups.SUR.add(treeGroup);
         }}
 
         // -------------------------------------------------------------
@@ -2569,6 +4316,131 @@ def render_3d_digital_twin_component(
           requestAnimationFrame(animate);
           if (controls) controls.update();
           renderer.render(scene, camera);
+        }}
+
+        let isExplodedState = false;
+        function toggleExplodedCompact() {{
+          isExplodedState = !isExplodedState;
+          const rng = document.getElementById('rng-explode');
+          if (rng) {{
+            rng.value = isExplodedState ? "0.65" : "0";
+            rng.dispatchEvent(new Event('input'));
+          }}
+          const btn = document.getElementById('btn-tb-explode');
+          if (btn) btn.classList.toggle('active', isExplodedState);
+        }}
+
+        let isXrayState = false;
+        function toggleXrayMode() {{
+          isXrayState = !isXrayState;
+          const rng = document.getElementById('rng-xray');
+          if (rng) {{
+            rng.value = isXrayState ? "0.2" : "1";
+            rng.dispatchEvent(new Event('input'));
+          }}
+          const btn = document.getElementById('btn-tb-xray');
+          if (btn) btn.classList.toggle('active', isXrayState);
+        }}
+
+        function resetCamGov() {{
+          setCam('iso');
+          const rng1 = document.getElementById('rng-explode');
+          if (rng1) {{ rng1.value = "0"; rng1.dispatchEvent(new Event('input')); }}
+          const rng2 = document.getElementById('rng-xray');
+          if (rng2) {{ rng2.value = "1"; rng2.dispatchEvent(new Event('input')); }}
+          isExplodedState = false;
+          isXrayState = false;
+          const b1 = document.getElementById('btn-tb-explode');
+          if (b1) b1.classList.remove('active');
+          const b2 = document.getElementById('btn-tb-xray');
+          if (b2) b2.classList.remove('active');
+        }}
+
+        function exportModelGLB() {{
+          if (!THREE.GLTFExporter) {{
+            alert("GLTFExporter is loading. Please try again in a moment.");
+            return;
+          }}
+          const exporter = new THREE.GLTFExporter();
+          const exportGroup = new THREE.Group();
+          Object.values(groups).forEach(g => {{
+            if (g.visible) {{
+              exportGroup.add(g.clone(true));
+            }}
+          }});
+
+          exporter.parse(
+            exportGroup,
+            function (result) {{
+              let blob;
+              if (result instanceof ArrayBuffer) {{
+                blob = new Blob([result], {{ type: 'application/octet-stream' }});
+              }} else {{
+                const output = JSON.stringify(result, null, 2);
+                blob = new Blob([output], {{ type: 'application/json' }});
+              }}
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `${{BUILDING_DATA.name.replace(/[^a-zA-Z0-9]/g, '_')}}_3D_Digital_Twin.glb`;
+              link.click();
+              URL.revokeObjectURL(link.href);
+            }},
+            function (error) {{
+              console.error('An error happened during GLTF export:', error);
+              alert('Export error: ' + error.message);
+            }},
+            {{ binary: true }}
+          );
+        }}
+
+        function loadCustom3DModel(event) {{
+          const file = event.target.files[0];
+          if (!file) return;
+          const fileName = file.name.toLowerCase();
+          const reader = new FileReader();
+
+          if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {{
+            reader.readAsArrayBuffer(file);
+            reader.onload = function (e) {{
+              const contents = e.target.result;
+              const loader = new THREE.GLTFLoader();
+              loader.parse(contents, '', function (gltf) {{
+                const model = gltf.scene;
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                const targetScale = 38.0 / maxDim;
+                model.scale.set(targetScale, targetScale, targetScale);
+                model.position.set(20 - center.x * targetScale, 20 - center.y * targetScale, -box.min.z * targetScale);
+
+                groups.BLD.clear();
+                groups.BLD.add(model);
+                alert(`Successfully loaded 3D Model: ${{file.name}}`);
+              }}, function (err) {{
+                console.error(err);
+                alert('Error parsing 3D file: ' + err.message);
+              }});
+            }};
+          }} else if (fileName.endsWith('.obj')) {{
+            reader.readAsText(file);
+            reader.onload = function (e) {{
+              const contents = e.target.result;
+              const loader = new THREE.OBJLoader();
+              const obj = loader.parse(contents);
+              const box = new THREE.Box3().setFromObject(obj);
+              const size = box.getSize(new THREE.Vector3());
+              const center = box.getCenter(new THREE.Vector3());
+              const maxDim = Math.max(size.x, size.y, size.z) || 1;
+              const targetScale = 38.0 / maxDim;
+              obj.scale.set(targetScale, targetScale, targetScale);
+              obj.position.set(20 - center.x * targetScale, 20 - center.y * targetScale, -box.min.z * targetScale);
+
+              groups.BLD.clear();
+              groups.BLD.add(obj);
+              alert(`Successfully loaded OBJ Model: ${{file.name}}`);
+            }};
+          }}
         }}
 
         init();
